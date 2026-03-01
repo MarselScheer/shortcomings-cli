@@ -20,6 +20,10 @@ def add_aspect(name: str, description: str):
     base_path = get_base_path()
 
     aspect_dir = base_path / "aspects" / name
+    if aspect_dir.exists():
+        typer.echo(f"Error: Aspect '{name}' already exists.", err=True)
+        raise typer.Exit(code=1)
+
     aspect_dir.mkdir(parents=True, exist_ok=True)
 
     aspect_file = aspect_dir / "aspect.yaml"
@@ -49,6 +53,12 @@ def add_feature(
     tags_list = [t.strip() for t in tags.split(",")] if tags else []
 
     feature_file = features_dir / f"{name}.yaml"
+    if feature_file.exists():
+        typer.echo(
+            f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True
+        )
+        raise typer.Exit(code=1)
+
     feature_data = {
         "title": name,
         "description": description,
@@ -78,6 +88,13 @@ def add_shortcoming(
     tags_list = [t.strip() for t in tags.split(",")] if tags else []
 
     shortcoming_file = shortcomings_dir / f"{name}.yaml"
+    if shortcoming_file.exists():
+        typer.echo(
+            f"Error: Shortcoming '{name}' already exists in aspect '{aspect}'.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
     shortcoming_data = {
         "title": name,
         "description": description,
@@ -98,6 +115,10 @@ def list_all():
 
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
+
+    # Guard: if aspects directory doesn't exist, return gracefully
+    if not aspects_dir.exists():
+        return
 
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
