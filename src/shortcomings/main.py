@@ -6,9 +6,21 @@ import yaml
 app = typer.Typer(help="Shortcomings CLI")
 
 
+def find_config_path() -> Path:
+    """Find .shortcomings.yaml by searching current and parent directories."""
+    current = Path.cwd()
+    for dir_path in [current] + list(current.parents):
+        config_path = dir_path / ".shortcomings.yaml"
+        if config_path.exists():
+            return config_path
+    raise FileNotFoundError(
+        f"Config file .shortcomings.yaml not found in {current} or any parent directory"
+    )
+
+
 def get_base_path() -> Path:
     """Load base_path from .shortcomings.yaml config."""
-    config_path = Path(".shortcomings.yaml")
+    config_path = find_config_path()
     with open(config_path) as f:
         config = yaml.safe_load(f)
     return Path(config["base_path"])
