@@ -15,7 +15,7 @@ def test_add_aspect_creates_file():
         config_path = Path(".shortcomings.yaml")
         config_path.write_text("base_path: .\n")
 
-        result = runner.invoke(app, ["api", "API endpoints"])
+        result = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
 
         # Check if the command succeeded
         assert result.exit_code == 0, f"Command failed with: {result.output}"
