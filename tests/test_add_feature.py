@@ -48,3 +48,26 @@ def test_add_feature_creates_file():
         assert content["title"] == "github-actions"
         assert content["description"] == "GitHub Actions workflow for CI"
         assert content["tags"] == ["ci", "github", "automation"]
+
+
+def test_add_feature_fails_if_already_exists():
+    """Test that adding a feature that already exists fails."""
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        # Create the config file
+        config_path = Path(".shortcomings.yaml")
+        config_path.write_text("base_path: .\n")
+
+        # First, create an aspect
+        result = runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        assert result.exit_code == 0, f"Failed to create aspect: {result.output}"
+
+        # First add should succeed
+        result1 = runner.invoke(app, ["add-feature", "ci", "github-actions"])
+        assert result1.exit_code == 0, f"First add-feature failed: {result1.output}"
+
+        # Second add should fail
+        result2 = runner.invoke(app, ["add-feature", "ci", "github-actions"])
+        assert result2.exit_code != 0, "Adding duplicate feature should fail"
+        assert "already exists" in result2.output.lower()

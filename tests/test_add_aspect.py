@@ -28,3 +28,22 @@ def test_add_aspect_creates_file():
         content = aspect_file.read_text()
         assert "api" in content
         assert "API endpoints" in content
+
+
+def test_add_aspect_fails_if_already_exists():
+    """Test that adding an aspect that already exists fails."""
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        # Create the config file
+        config_path = Path(".shortcomings.yaml")
+        config_path.write_text("base_path: .\n")
+
+        # First add should succeed
+        result1 = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        assert result1.exit_code == 0, f"First add-aspect failed: {result1.output}"
+
+        # Second add should fail
+        result2 = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        assert result2.exit_code != 0, "Adding duplicate aspect should fail"
+        assert "already exists" in result2.output.lower()
