@@ -42,9 +42,7 @@ def test_add_shortcoming_creates_file():
         assert result.exit_code == 0, f"Command failed with: {result.output}"
 
         # Check if the file was created
-        shortcoming_file = (
-            Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
-        )
+        shortcoming_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
         assert shortcoming_file.exists(), f"File {shortcoming_file} was not created"
 
         # Check the content of the file

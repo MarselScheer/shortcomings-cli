@@ -54,7 +54,9 @@ def add_feature(
 
     feature_file = features_dir / f"{name}.yaml"
     if feature_file.exists():
-        typer.echo(f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True)
+        typer.echo(
+            f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True
+        )
         raise typer.Exit(code=1)
 
     feature_data = {
@@ -87,7 +89,10 @@ def add_shortcoming(
 
     shortcoming_file = shortcomings_dir / f"{name}.yaml"
     if shortcoming_file.exists():
-        typer.echo(f"Error: Shortcoming '{name}' already exists in aspect '{aspect}'.", err=True)
+        typer.echo(
+            f"Error: Shortcoming '{name}' already exists in aspect '{aspect}'.",
+            err=True,
+        )
         raise typer.Exit(code=1)
 
     shortcoming_data = {

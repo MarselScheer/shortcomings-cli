@@ -63,4 +63,6 @@ def test_list_all_outputs_jsonl():
         for line in lines:
             obj = json.loads(line)
             assert "type" in obj, "Missing 'type' field"
-            assert obj["type"] in ["aspect", "feature", "shortcoming"], f"Invalid type: {obj['type']}"
+            assert obj["type"] in ["aspect", "feature", "shortcoming"], (
+                f"Invalid type: {obj['type']}"
+            )
