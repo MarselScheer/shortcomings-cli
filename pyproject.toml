@@ -4,7 +4,15 @@ version = "0.0.1"
 description = "Maintain and search project features and shortcomings"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.15.0",
+]
+
+[project.scripts]
+shortcomings = "shortcomings.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [dependency-groups]
 dev = [
