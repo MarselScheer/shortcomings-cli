@@ -91,5 +91,37 @@ def add_shortcoming(
     typer.echo(f"Created shortcoming '{name}' at {shortcoming_file}")
 
 
+@app.command()
+def list_all():
+    """List all aspects, features and shortcomings in JSONL format."""
+    import json
+
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+
+    for aspect_path in aspects_dir.iterdir():
+        aspect_file = aspect_path / "aspect.yaml"
+        with open(aspect_file) as f:
+            aspect_data = yaml.safe_load(f)
+        aspect_data["type"] = "aspect"
+        print(json.dumps(aspect_data))
+
+        features_dir = aspect_path / "features"
+        for feature_file in features_dir.glob("*.yaml"):
+            with open(feature_file) as f:
+                feature_data = yaml.safe_load(f)
+            feature_data["type"] = "feature"
+            feature_data["aspect"] = aspect_path.name
+            print(json.dumps(feature_data))
+
+        shortcomings_dir = aspect_path / "shortcomings"
+        for shortcoming_file in shortcomings_dir.glob("*.yaml"):
+            with open(shortcoming_file) as f:
+                shortcoming_data = yaml.safe_load(f)
+            shortcoming_data["type"] = "shortcoming"
+            shortcoming_data["aspect"] = aspect_path.name
+            print(json.dumps(shortcoming_data))
+
+
 if __name__ == "__main__":
     app()
