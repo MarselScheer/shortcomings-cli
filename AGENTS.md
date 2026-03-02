@@ -5,6 +5,7 @@ A UV managed repo. Key paths/files:
 - `pyproject.toml` - Project metadata and dependencies
 - `src/shortcomings/` - Source code directory
 - `tests/` - Test suite
+- `aspects/` - Aspects, features and shortcomings of the solution (`shortcomings --list-all` will also list everything from that folder)
 
 # Core rules
 
