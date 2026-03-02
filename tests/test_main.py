@@ -41,6 +41,17 @@ class TestConfigDiscovery:
 class TestAspectManagement:
     """Tests for add-aspect command."""
 
+    def test_add_aspect_invalid_name_fails(self):
+        """Test that adding an aspect with invalid name (e.g. spaces) fails."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            config_path = Path(".shortcomings.yaml")
+            config_path.write_text("base_path: .\n")
+
+            result = runner.invoke(app, ["add-aspect", "invalid name", "API endpoints"])
+            assert result.exit_code != 0
+            assert "invalid name" in result.output.lower()
+
     def test_add_aspect_creates_file(self):
         """Test that add-aspect command creates the aspect.yaml file."""
         runner = CliRunner()
