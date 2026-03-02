@@ -26,8 +26,12 @@ def test_add_aspect_creates_file():
 
         # Check the content of the file
         content = aspect_file.read_text()
-        assert "api" in content
-        assert "API endpoints" in content
+        import yaml
+
+        data = yaml.safe_load(content)
+        assert data["name"] == "api"
+        assert "user_story" in data
+        assert data["user_story"] == "API endpoints"
 
 
 def test_add_aspect_fails_if_already_exists():

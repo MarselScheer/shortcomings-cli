@@ -1,7 +1,11 @@
 from pathlib import Path
+from typing import Literal
 
 import typer
 import yaml
+
+VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
+
 
 app = typer.Typer(help="Shortcomings CLI")
 
@@ -27,7 +31,7 @@ def get_base_path() -> Path:
 
 
 @app.command()
-def add_aspect(name: str, description: str):
+def add_aspect(name: str, user_story: str):
     """Add a new aspect."""
     base_path = get_base_path()
 
@@ -41,7 +45,7 @@ def add_aspect(name: str, description: str):
     aspect_file = aspect_dir / "aspect.yaml"
     aspect_data = {
         "name": name,
-        "description": description,
+        "user_story": user_story,
     }
     with open(aspect_file, "w") as f:
         yaml.dump(aspect_data, f)
@@ -87,11 +91,20 @@ def add_shortcoming(
     aspect: str,
     name: str,
     description: str = "",
-    criticality: str = "",
+    criticality: Literal["low", "medium", "high", "critical"] = "critical",
     tags: str = "",
     depends_on: str = "",
 ):
     """Add a new shortcoming to an aspect."""
+    # Validate criticality
+    if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
+        valid_values = ", ".join(sorted(VALID_CRITICALITY_VALUES))
+        typer.echo(
+            f"Error: Invalid criticality '{criticality}'. Must be one of: {valid_values}.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
     base_path = get_base_path()
 
     shortcomings_dir = base_path / "aspects" / aspect / "shortcomings"
