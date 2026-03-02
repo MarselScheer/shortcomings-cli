@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -30,9 +31,20 @@ def get_base_path() -> Path:
     return Path(config["base_path"])
 
 
+def validate_name(name: str):
+    """Validate that name contains only alphanumeric characters, dashes, or underscores."""
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
+        typer.echo(
+            f"Error: Invalid name '{name}'. Use only alphanumeric, dashes, or underscores.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+
 @app.command()
 def add_aspect(name: str, user_story: str):
     """Add a new aspect."""
+    validate_name(name)
     base_path = get_base_path()
 
     aspect_dir = base_path / "aspects" / name
