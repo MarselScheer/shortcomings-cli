@@ -1,0 +1,7 @@
+criticality: medium
+depends_on: ''
+description: Only JSONL output is supported; no human-readable table or summary view
+tags:
+- reporting
+- ux
+title: Limited_Output_Formats

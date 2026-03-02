@@ -1,0 +1,9 @@
+criticality: high
+depends_on: ''
+description: Names can contain spaces and special chars which are used as dir/file
+  names without validation
+tags:
+- security
+- data-integrity
+- robustness
+title: No_Name_Validation

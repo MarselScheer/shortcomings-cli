@@ -1,0 +1,7 @@
+criticality: medium
+depends_on: ''
+description: No automatic creation timestamps, making it hard to track history
+tags:
+- metadata
+- tracking
+title: Missing_Timestamps

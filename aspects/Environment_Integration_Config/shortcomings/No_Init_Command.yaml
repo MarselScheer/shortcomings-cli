@@ -1,0 +1,7 @@
+criticality: low
+depends_on: ''
+description: No interactive init command to create .shortcomings.yaml
+tags:
+- ux
+- onboarding
+title: No_Init_Command
