@@ -1,0 +1,7 @@
+criticality: low
+depends_on: ''
+description: No command to open files in  for manual editing
+tags:
+- ux
+- workflow
+title: No_Editor_Integration

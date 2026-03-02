@@ -1,0 +1,7 @@
+criticality: low
+depends_on: ''
+description: No automatic capture of who created a feature or shortcoming
+tags:
+- metadata
+- governance
+title: No_Author_Attribution

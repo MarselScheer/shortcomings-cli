@@ -1,0 +1,3 @@
+name: Data_Extraction_Interoperability
+user_story: As a release manager, I want to export all recorded data into a machine-readable
+  format (JSONL) so that I can generate reports or integrate it into other tools.
