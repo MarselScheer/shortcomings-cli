@@ -181,5 +181,29 @@ def list_all():
             print(json.dumps(shortcoming_data))
 
 
+@app.command()
+def list_shortcomings(
+    criticality: str | None = None,
+):
+    """List all shortcomings in JSONL format, optionally filtered by criticality."""
+    import json
+
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+
+    for aspect_path in aspects_dir.iterdir():
+        shortcomings_dir = aspect_path / "shortcomings"
+        for shortcoming_file in shortcomings_dir.glob("*.yaml"):
+            with open(shortcoming_file) as f:
+                shortcoming_data = yaml.safe_load(f)
+
+            if criticality is not None and shortcoming_data.get("criticality") != criticality:
+                continue
+
+            shortcoming_data["type"] = "shortcoming"
+            shortcoming_data["aspect"] = aspect_path.name
+            print(json.dumps(shortcoming_data))
+
+
 if __name__ == "__main__":
     app()
