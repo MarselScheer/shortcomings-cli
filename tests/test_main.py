@@ -271,6 +271,18 @@ def _create_aspect_with_invalid_yaml(
     target_file.write_text("title: broken\n  invalid: indentation")
 
 
+class TestVersion:
+    """Tests for --version flag."""
+
+    def test_version_flag_outputs_version(self):
+        """Test that --version flag outputs the package version."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["--version"])
+        assert result.exit_code == 0
+        # Check that the output contains a version string (e.g., "0.0.5")
+        assert "." in result.output  # Version contains dots
+
+
 class TestListing:
     """Tests for list-all command."""
 

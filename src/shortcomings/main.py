@@ -1,4 +1,5 @@
 import re
+from importlib.metadata import version as get_version
 from pathlib import Path
 from typing import Literal
 
@@ -8,7 +9,26 @@ import yaml
 VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
 
 
-app = typer.Typer(help="Shortcomings CLI")
+def get_package_version() -> str:
+    """Get the version of the installed package."""
+    try:
+        return get_version("shortcomings-cli")
+    except Exception:
+        return "0.0.0"
+
+
+app = typer.Typer(help="Shortcomings CLI", add_completion=False)
+
+
+@app.callback(invoke_without_command=True)
+def main_callback(
+    ctx: typer.Context,
+    version: bool = typer.Option(False, "--version", help="Show version", is_eager=True),
+):
+    """Shortcomings CLI"""
+    if version:
+        typer.echo(get_package_version())
+        raise typer.Exit(code=0)
 
 
 def safe_load_yaml(path: Path) -> dict:
