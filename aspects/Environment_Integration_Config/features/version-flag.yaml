@@ -1,0 +1,6 @@
+description: User can run `shortcomings --version` to see the installed version
+tags:
+- cli
+- usability
+- version
+title: version-flag
