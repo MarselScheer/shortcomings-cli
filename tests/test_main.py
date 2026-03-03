@@ -272,7 +272,7 @@ class TestListShortcomings:
             )
             assert result.exit_code == 0
 
-            lines = [l for l in result.output.strip().split("\n") if l]
+            lines = [line for line in result.output.strip().split("\n") if line]
             assert len(lines) == 1
             obj = json.loads(lines[0])
             assert obj["title"] == "sc1"
