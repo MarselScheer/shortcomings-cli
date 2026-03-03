@@ -240,3 +240,40 @@ class TestListing:
             result = runner.invoke(app, ["list-all"])
             assert result.exit_code == 0
             assert "test-f" in result.output
+
+
+class TestListShortcomings:
+    """Tests for list-shortcomings command."""
+
+    def test_list_shortcomings_filters_by_criticality(self):
+        """Test that list-shortcomings filters by criticality when provided."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+            # Add shortcomings with different criticalities
+            runner.invoke(
+                app, ["add-shortcoming", "api", "sc1", "--criticality", "critical"]
+            )
+            runner.invoke(
+                app, ["add-shortcoming", "api", "sc2", "--criticality", "high"]
+            )
+            runner.invoke(
+                app, ["add-shortcoming", "api", "sc3", "--criticality", "medium"]
+            )
+            runner.invoke(
+                app, ["add-shortcoming", "api", "sc4", "--criticality", "low"]
+            )
+
+            # Filter by 'critical'
+            result = runner.invoke(
+                app, ["list-shortcomings", "--criticality", "critical"]
+            )
+            assert result.exit_code == 0
+
+            lines = [l for l in result.output.strip().split("\n") if l]
+            assert len(lines) == 1
+            obj = json.loads(lines[0])
+            assert obj["title"] == "sc1"
+            assert obj["criticality"] == "critical"
