@@ -30,6 +30,11 @@ def main_callback(
         typer.echo(get_package_version())
         raise typer.Exit(code=0)
 
+    # If no subcommand was invoked, show help
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit(code=0)
+
 
 def safe_load_yaml(path: Path) -> dict:
     """Load and parse a YAML file, handling errors gracefully."""
