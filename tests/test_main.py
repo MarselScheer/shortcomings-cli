@@ -5,7 +5,28 @@ import yaml
 import pytest
 from pathlib import Path
 from typer.testing import CliRunner
-from shortcomings.main import app, find_config_path
+from shortcomings.main import app, find_config_path, get_base_path
+
+
+# --- Fixtures & Helpers ---
+
+
+@pytest.fixture
+def cli_runner():
+    """Fixture that provides an initialized CliRunner with config file."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        Path(".shortcomings.yaml").write_text("base_path: .\n")
+        yield runner
+
+
+def assert_yaml_content(file_path: Path, expected: dict):
+    """Helper to verify YAML file content matches expected dict."""
+    content = yaml.safe_load(file_path.read_text())
+    for key, value in expected.items():
+        assert content.get(key) == value, (
+            f"Mismatch for key '{key}': {content.get(key)!r} != {value!r}"
+        )
 
 
 class TestConfigDiscovery:
@@ -41,239 +62,294 @@ class TestConfigDiscovery:
 class TestAspectManagement:
     """Tests for add-aspect command."""
 
-    def test_add_aspect_invalid_name_fails(self):
+    def test_add_aspect_invalid_name_fails(self, cli_runner):
         """Test that adding an aspect with invalid name (e.g. spaces) fails."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            config_path = Path(".shortcomings.yaml")
-            config_path.write_text("base_path: .\n")
+        result = cli_runner.invoke(app, ["add-aspect", "invalid name", "API endpoints"])
+        assert result.exit_code != 0
+        assert "invalid name" in result.output.lower()
 
-            result = runner.invoke(app, ["add-aspect", "invalid name", "API endpoints"])
-            assert result.exit_code != 0
-            assert "invalid name" in result.output.lower()
-
-    def test_add_aspect_creates_file(self):
+    def test_add_aspect_creates_file(self, cli_runner):
         """Test that add-aspect command creates the aspect.yaml file."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            config_path = Path(".shortcomings.yaml")
-            config_path.write_text("base_path: .\n")
+        result = cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        assert result.exit_code == 0
 
-            result = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
-            assert result.exit_code == 0
+        aspect_file = Path("aspects") / "api" / "aspect.yaml"
+        assert aspect_file.exists()
+        assert_yaml_content(aspect_file, {"name": "api", "user_story": "API endpoints"})
 
-            aspect_file = Path("aspects") / "api" / "aspect.yaml"
-            assert aspect_file.exists()
-
-            data = yaml.safe_load(aspect_file.read_text())
-            assert data["name"] == "api"
-            assert data["user_story"] == "API endpoints"
-
-    def test_add_aspect_fails_if_already_exists(self):
+    def test_add_aspect_fails_if_already_exists(self, cli_runner):
         """Test that adding an aspect that already exists fails."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            config_path = Path(".shortcomings.yaml")
-            config_path.write_text("base_path: .\n")
-
-            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
-            result = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
-            assert result.exit_code != 0
-            assert "already exists" in result.output.lower()
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        result = cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        assert result.exit_code != 0
+        assert "already exists" in result.output.lower()
 
 
 class TestFeatureManagement:
     """Tests for add-feature command."""
 
-    def test_add_feature_creates_file(self):
+    def test_add_feature_creates_file(self, cli_runner):
         """Test that add-feature command creates the feature.yaml file."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
 
-            result = runner.invoke(
-                app,
-                [
-                    "add-feature",
-                    "ci",
-                    "github-actions",
-                    "--description",
-                    "GitHub Actions workflow for CI",
-                    "--tags",
-                    "ci,github,automation",
-                ],
-            )
-            assert result.exit_code == 0
+        result = cli_runner.invoke(
+            app,
+            [
+                "add-feature",
+                "ci",
+                "github-actions",
+                "--description",
+                "GitHub Actions workflow for CI",
+                "--tags",
+                "ci,github,automation",
+            ],
+        )
+        assert result.exit_code == 0
 
-            feature_file = Path("aspects") / "ci" / "features" / "github-actions.yaml"
-            assert feature_file.exists()
+        feature_file = Path("aspects") / "ci" / "features" / "github-actions.yaml"
+        assert feature_file.exists()
+        assert_yaml_content(
+            feature_file,
+            {
+                "title": "github-actions",
+                "description": "GitHub Actions workflow for CI",
+                "tags": ["ci", "github", "automation"],
+            },
+        )
 
-            content = yaml.safe_load(feature_file.read_text())
-            assert content["title"] == "github-actions"
-            assert content["description"] == "GitHub Actions workflow for CI"
-            assert content["tags"] == ["ci", "github", "automation"]
-
-    def test_add_feature_fails_if_already_exists(self):
+    def test_add_feature_fails_if_already_exists(self, cli_runner):
         """Test that adding a feature that already exists fails."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
-            runner.invoke(app, ["add-feature", "ci", "github-actions"])
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        cli_runner.invoke(app, ["add-feature", "ci", "github-actions"])
 
-            result = runner.invoke(app, ["add-feature", "ci", "github-actions"])
-            assert result.exit_code != 0
-            assert "already exists" in result.output.lower()
+        result = cli_runner.invoke(app, ["add-feature", "ci", "github-actions"])
+        assert result.exit_code != 0
+        assert "already exists" in result.output.lower()
 
 
 class TestShortcomingManagement:
     """Tests for add-shortcoming command and validation."""
 
-    def test_add_shortcoming_creates_file(self):
+    def test_add_shortcoming_creates_file(self, cli_runner):
         """Test that add-shortcoming command creates the shortcoming.yaml file."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
 
-            result = runner.invoke(
-                app,
-                [
-                    "add-shortcoming",
-                    "ci",
-                    "slow-builds",
-                    "--description",
-                    "Builds take too long",
-                    "--criticality",
-                    "medium",
-                    "--tags",
-                    "performance,ci",
-                    "--depends-on",
-                    "self",
-                ],
-            )
-            assert result.exit_code == 0
+        result = cli_runner.invoke(
+            app,
+            [
+                "add-shortcoming",
+                "ci",
+                "slow-builds",
+                "--description",
+                "Builds take too long",
+                "--criticality",
+                "medium",
+                "--tags",
+                "performance,ci",
+                "--depends-on",
+                "self",
+            ],
+        )
+        assert result.exit_code == 0
 
-            sc_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
-            assert sc_file.exists()
+        sc_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
+        assert sc_file.exists()
+        assert_yaml_content(
+            sc_file,
+            {
+                "title": "slow-builds",
+                "criticality": "medium",
+                "tags": ["performance", "ci"],
+            },
+        )
 
-            content = yaml.safe_load(sc_file.read_text())
-            assert content["title"] == "slow-builds"
-            assert content["criticality"] == "medium"
-            assert content["tags"] == ["performance", "ci"]
-
-    def test_add_shortcoming_fails_if_already_exists(self):
+    def test_add_shortcoming_fails_if_already_exists(self, cli_runner):
         """Test that adding a shortcoming that already exists fails."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
-            runner.invoke(app, ["add-shortcoming", "ci", "slow-builds"])
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        cli_runner.invoke(app, ["add-shortcoming", "ci", "slow-builds"])
 
-            result = runner.invoke(app, ["add-shortcoming", "ci", "slow-builds"])
-            assert result.exit_code != 0
-            assert "already exists" in result.output.lower()
+        result = cli_runner.invoke(app, ["add-shortcoming", "ci", "slow-builds"])
+        assert result.exit_code != 0
+        assert "already exists" in result.output.lower()
 
-    def test_add_shortcoming_invalid_criticality_fails(self):
+    def test_add_shortcoming_invalid_criticality_fails(self, cli_runner):
         """Test that adding a shortcoming with invalid criticality fails."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
 
-            result = runner.invoke(
-                app,
-                ["add-shortcoming", "ci", "slow-builds", "--criticality", "very-high"],
+        result = cli_runner.invoke(
+            app, ["add-shortcoming", "ci", "slow-builds", "--criticality", "very-high"]
+        )
+        assert result.exit_code != 0
+        assert any(
+            word in result.output.lower()
+            for word in ["low", "medium", "high", "critical", "valid"]
+        )
+
+
+class TestConfigRobustness:
+    """Tests for robust YAML loading."""
+
+    def test_config_corrupted_yaml_does_not_crash(self, tmp_path, monkeypatch):
+        """Test that corrupted .shortcomings.yaml does not cause a traceback."""
+        # Create a corrupted config file that will cause a YAML parse error
+        config_file = tmp_path / ".shortcomings.yaml"
+        # Invalid YAML: unclosed list
+        config_file.write_text("base_path: [1,2,3")
+
+        monkeypatch.chdir(tmp_path)
+
+        # We expect the code to handle this gracefully - it should NOT raise yaml.YAMLError
+        with pytest.raises(Exception) as exc_info:
+            get_base_path()
+
+        # The exception should NOT be a yaml.YAMLError (that's the fragile behavior)
+        assert not isinstance(exc_info.value, yaml.YAMLError), (
+            f"YAML loading raised yaml.YAMLError instead of handling gracefully: {exc_info.value}"
+        )
+
+    @pytest.mark.parametrize(
+        "command,setup_func",
+        [
+            # (command, setup_func) where setup_func(config_dir, aspects_dir) -> None
+            (
+                ["list-all"],
+                lambda cfg, asp: _create_aspect_with_invalid_yaml(
+                    asp, "test-aspect", "aspect.yaml"
+                ),
+            ),
+            (
+                ["list-shortcomings"],
+                lambda cfg, asp: _create_aspect_with_invalid_yaml(
+                    asp,
+                    "test-aspect",
+                    "shortcomings/broken.yaml",
+                    aspect_yaml_valid=True,
+                ),
+            ),
+        ],
+    )
+    def test_handles_corrupted_yaml(self, tmp_path, monkeypatch, command, setup_func):
+        """Parametrized test for corrupted YAML handling."""
+        config_file = tmp_path / ".shortcomings.yaml"
+        config_file.write_text("base_path: .\n")
+
+        aspects_dir = tmp_path / "aspects"
+        aspects_dir.mkdir()
+        setup_func(tmp_path, aspects_dir)
+
+        monkeypatch.chdir(tmp_path)
+
+        runner = CliRunner()
+
+        result = runner.invoke(app, command)
+        if result.exception:
+            assert not isinstance(result.exception, yaml.YAMLError), (
+                f"{command} raised yaml.YAMLError instead of handling gracefully: {result.exception}"
             )
-            assert result.exit_code != 0
-            assert any(
-                word in result.output.lower()
-                for word in ["low", "medium", "high", "critical", "valid"]
-            )
+
+
+def _create_aspect_with_invalid_yaml(
+    aspects_dir: Path,
+    aspect_name: str,
+    invalid_file_path: str,
+    aspect_yaml_valid: bool = False,
+):
+    """Helper to create an aspect with invalid YAML in a specific file."""
+    aspect_dir = aspects_dir / aspect_name
+    aspect_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create aspect.yaml (valid or invalid based on flag)
+    aspect_file = aspect_dir / "aspect.yaml"
+    if aspect_yaml_valid:
+        aspect_file.write_text(f"name: {aspect_name}\n")
+    else:
+        aspect_file.write_text("name: test\n  invalid: indentation")
+
+    # Create the target file with invalid YAML
+    target_file = aspect_dir / invalid_file_path
+    target_file.parent.mkdir(parents=True, exist_ok=True)
+    target_file.write_text("title: broken\n  invalid: indentation")
 
 
 class TestListing:
     """Tests for list-all command."""
 
-    def test_list_all_outputs_jsonl(self):
+    def test_list_all_outputs_jsonl(self, cli_runner):
         """Test that list-all outputs entities in JSONL format."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
-            runner.invoke(app, ["add-feature", "api", "rest-api"])
-            runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-feature", "api", "rest-api"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
 
-            result = runner.invoke(app, ["list-all"])
-            assert result.exit_code == 0
+        result = cli_runner.invoke(app, ["list-all"])
+        assert result.exit_code == 0
 
-            lines = result.output.strip().split("\n")
-            assert len(lines) == 3
-            for line in lines:
-                obj = json.loads(line)
-                assert obj["type"] in ["aspect", "feature", "shortcoming"]
+        lines = result.output.strip().split("\n")
+        assert len(lines) == 3
+        for line in lines:
+            obj = json.loads(line)
+            assert obj["type"] in ["aspect", "feature", "shortcoming"]
 
-    def test_list_all_handles_no_aspects(self):
+    def test_list_all_handles_no_aspects(self, cli_runner):
         """Test that list-all handles the case when no aspects directory exists."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            result = runner.invoke(app, ["list-all"])
-            assert result.exit_code == 0
-            assert result.output.strip() == ""
+        result = cli_runner.invoke(app, ["list-all"])
+        assert result.exit_code == 0
+        assert result.output.strip() == ""
 
-    def test_list_all_handles_robustness(self):
+    def test_list_all_handles_robustness(self, cli_runner):
         """Test robustness of list-all with missing subdirectories."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "test-aspect", "A test aspect"])
+        cli_runner.invoke(app, ["add-aspect", "test-aspect", "A test aspect"])
 
-            # Aspect with no features
-            result = runner.invoke(app, ["list-all"])
-            assert result.exit_code == 0
-            assert "test-aspect" in result.output
+        # Aspect with no features
+        result = cli_runner.invoke(app, ["list-all"])
+        assert result.exit_code == 0
+        assert "test-aspect" in result.output
 
-            # Aspect with feature but no shortcomings
-            runner.invoke(app, ["add-feature", "test-aspect", "test-f"])
-            result = runner.invoke(app, ["list-all"])
-            assert result.exit_code == 0
-            assert "test-f" in result.output
+        # Aspect with feature but no shortcomings
+        cli_runner.invoke(app, ["add-feature", "test-aspect", "test-f"])
+        result = cli_runner.invoke(app, ["list-all"])
+        assert result.exit_code == 0
+        assert "test-f" in result.output
 
 
 class TestListShortcomings:
     """Tests for list-shortcomings command."""
 
-    def test_list_shortcomings_filters_by_criticality(self):
+    @pytest.mark.parametrize(
+        "criticality,expected_title",
+        [
+            ("critical", "sc1"),
+            ("high", "sc2"),
+            ("medium", "sc3"),
+            ("low", "sc4"),
+        ],
+    )
+    def test_list_shortcomings_filters_by_criticality(
+        self, cli_runner, criticality, expected_title
+    ):
         """Test that list-shortcomings filters by criticality when provided."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            Path(".shortcomings.yaml").write_text("base_path: .\n")
-            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
 
-            # Add shortcomings with different criticalities
-            runner.invoke(
-                app, ["add-shortcoming", "api", "sc1", "--criticality", "critical"]
-            )
-            runner.invoke(
-                app, ["add-shortcoming", "api", "sc2", "--criticality", "high"]
-            )
-            runner.invoke(
-                app, ["add-shortcoming", "api", "sc3", "--criticality", "medium"]
-            )
-            runner.invoke(
-                app, ["add-shortcoming", "api", "sc4", "--criticality", "low"]
-            )
+        # Add shortcomings with different criticalities
+        cli_runner.invoke(
+            app, ["add-shortcoming", "api", "sc1", "--criticality", "critical"]
+        )
+        cli_runner.invoke(
+            app, ["add-shortcoming", "api", "sc2", "--criticality", "high"]
+        )
+        cli_runner.invoke(
+            app, ["add-shortcoming", "api", "sc3", "--criticality", "medium"]
+        )
+        cli_runner.invoke(
+            app, ["add-shortcoming", "api", "sc4", "--criticality", "low"]
+        )
 
-            # Filter by 'critical'
-            result = runner.invoke(
-                app, ["list-shortcomings", "--criticality", "critical"]
-            )
-            assert result.exit_code == 0
+        result = cli_runner.invoke(
+            app, ["list-shortcomings", "--criticality", criticality]
+        )
+        assert result.exit_code == 0
 
-            lines = [l for l in result.output.strip().split("\n") if l]
-            assert len(lines) == 1
-            obj = json.loads(lines[0])
-            assert obj["title"] == "sc1"
-            assert obj["criticality"] == "critical"
+        lines = [line for line in result.output.strip().split("\n") if line]
+        assert len(lines) == 1
+        obj = json.loads(lines[0])
+        assert obj["title"] == expected_title
+        assert obj["criticality"] == criticality

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2026-03-03
+
+### Added
+- Robust YAML loading with graceful error handling for corrupted or invalid YAML files.
+- Clear error messages and exit code 1 when invalid YAML files are encountered.
+
+### Changed
+- Refactored `tests/test_main.py` to use pytest fixtures and helpers for cleaner test code.
+- Improved CLI stability by handling `yaml.YAMLError` exceptions.
+
 ## [0.0.3] - 2026-03-03
 
 ### Added

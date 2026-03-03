@@ -11,6 +11,16 @@ VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
 app = typer.Typer(help="Shortcomings CLI")
 
 
+def safe_load_yaml(path: Path) -> dict:
+    """Load and parse a YAML file, handling errors gracefully."""
+    try:
+        with open(path) as f:
+            return yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        typer.echo(f"Error: Invalid YAML in {path}: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
 def find_config_path() -> Path:
     """Find .shortcomings.yaml by searching current and parent directories."""
     current = Path.cwd()
@@ -26,8 +36,7 @@ def find_config_path() -> Path:
 def get_base_path() -> Path:
     """Load base_path from .shortcomings.yaml config."""
     config_path = find_config_path()
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
+    config = safe_load_yaml(config_path)
     return Path(config["base_path"])
 
 
@@ -159,23 +168,20 @@ def list_all():
 
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
-        with open(aspect_file) as f:
-            aspect_data = yaml.safe_load(f)
+        aspect_data = safe_load_yaml(aspect_file)
         aspect_data["type"] = "aspect"
         print(json.dumps(aspect_data))
 
         features_dir = aspect_path / "features"
         for feature_file in features_dir.glob("*.yaml"):
-            with open(feature_file) as f:
-                feature_data = yaml.safe_load(f)
+            feature_data = safe_load_yaml(feature_file)
             feature_data["type"] = "feature"
             feature_data["aspect"] = aspect_path.name
             print(json.dumps(feature_data))
 
         shortcomings_dir = aspect_path / "shortcomings"
         for shortcoming_file in shortcomings_dir.glob("*.yaml"):
-            with open(shortcoming_file) as f:
-                shortcoming_data = yaml.safe_load(f)
+            shortcoming_data = safe_load_yaml(shortcoming_file)
             shortcoming_data["type"] = "shortcoming"
             shortcoming_data["aspect"] = aspect_path.name
             print(json.dumps(shortcoming_data))
@@ -194,8 +200,7 @@ def list_shortcomings(
     for aspect_path in aspects_dir.iterdir():
         shortcomings_dir = aspect_path / "shortcomings"
         for shortcoming_file in shortcomings_dir.glob("*.yaml"):
-            with open(shortcoming_file) as f:
-                shortcoming_data = yaml.safe_load(f)
+            shortcoming_data = safe_load_yaml(shortcoming_file)
 
             if criticality is not None and shortcoming_data.get("criticality") != criticality:
                 continue
