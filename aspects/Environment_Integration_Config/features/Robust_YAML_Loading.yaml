@@ -1,0 +1,6 @@
+description: Added a safe_load_yaml helper that handles yaml.YAMLError gracefully,
+  providing clear error messages and exit code 1 on failure.
+tags:
+- robustness
+- error-handling
+title: Robust_YAML_Loading

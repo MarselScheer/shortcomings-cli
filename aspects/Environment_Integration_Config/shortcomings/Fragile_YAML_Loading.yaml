@@ -1,7 +1,0 @@
-criticality: high
-depends_on: ''
-description: YAML loading lacks try/except; corrupted files cause tracebacks
-tags:
-- robustness
-- error-handling
-title: Fragile_YAML_Loading
