@@ -5,7 +5,7 @@ import yaml
 import pytest
 from pathlib import Path
 from typer.testing import CliRunner
-from shortcomings.main import app, find_config_path
+from shortcomings.main import app, find_config_path, get_base_path
 
 
 class TestConfigDiscovery:
@@ -205,9 +205,6 @@ class TestConfigRobustness:
 
         monkeypatch.chdir(tmp_path)
 
-        from shortcomings.main import get_base_path
-        import yaml
-
         # We expect the code to handle this gracefully - it should NOT raise yaml.YAMLError
         with pytest.raises(Exception) as exc_info:
             get_base_path()
@@ -219,8 +216,6 @@ class TestConfigRobustness:
 
     def test_list_all_handles_corrupted_yaml_files(self, tmp_path, monkeypatch):
         """Test that list-all handles corrupted YAML files gracefully."""
-        import yaml
-
         # Setup: create config and aspect dir with corrupted aspect.yaml
         config_file = tmp_path / ".shortcomings.yaml"
         config_file.write_text("base_path: .\n")
@@ -235,9 +230,6 @@ class TestConfigRobustness:
 
         monkeypatch.chdir(tmp_path)
 
-        from typer.testing import CliRunner
-        from shortcomings.main import app
-
         runner = CliRunner()
         result = runner.invoke(app, ["list-all"])
 
@@ -250,8 +242,6 @@ class TestConfigRobustness:
 
     def test_list_shortcomings_handles_corrupted_yaml_files(self, tmp_path, monkeypatch):
         """Test that list-shortcomings handles corrupted YAML files gracefully."""
-        import yaml
-
         # Setup: create config and aspect dir with corrupted shortcoming.yaml
         config_file = tmp_path / ".shortcomings.yaml"
         config_file.write_text("base_path: .\n")
@@ -273,9 +263,6 @@ class TestConfigRobustness:
         sc_file.write_text("title: broken\n  invalid: indentation")
 
         monkeypatch.chdir(tmp_path)
-
-        from typer.testing import CliRunner
-        from shortcomings.main import app
 
         runner = CliRunner()
         result = runner.invoke(app, ["list-shortcomings"])
