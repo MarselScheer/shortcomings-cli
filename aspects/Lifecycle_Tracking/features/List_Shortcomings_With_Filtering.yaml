@@ -1,0 +1,7 @@
+description: User can list shortcomings in JSONL format with optional criticality
+  filtering
+tags:
+- command
+- listing
+- filtering
+title: List_Shortcomings_With_Filtering

@@ -10,6 +10,8 @@ A UV managed repo. Key paths/files:
 # Core rules
 
 - keep the AGENTS.md file updated, for instance if you create new development commands or modifies the repo structure
+- keep the CHANGLOG.md file updated
+- keep features under aspects/ updated
 
 # Development Commands
 
