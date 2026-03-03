@@ -193,6 +193,100 @@ class TestShortcomingManagement:
             )
 
 
+class TestConfigRobustness:
+    """Tests for robust YAML loading."""
+
+    def test_config_corrupted_yaml_does_not_crash(self, tmp_path, monkeypatch):
+        """Test that corrupted .shortcomings.yaml does not cause a traceback."""
+        # Create a corrupted config file that will cause a YAML parse error
+        config_file = tmp_path / ".shortcomings.yaml"
+        # Invalid YAML: unclosed list
+        config_file.write_text("base_path: [1,2,3")
+
+        monkeypatch.chdir(tmp_path)
+
+        from shortcomings.main import get_base_path
+        import yaml
+
+        # We expect the code to handle this gracefully - it should NOT raise yaml.YAMLError
+        with pytest.raises(Exception) as exc_info:
+            get_base_path()
+
+        # The exception should NOT be a yaml.YAMLError (that's the fragile behavior)
+        assert not isinstance(exc_info.value, yaml.YAMLError), (
+            f"YAML loading raised yaml.YAMLError instead of handling gracefully: {exc_info.value}"
+        )
+
+    def test_list_all_handles_corrupted_yaml_files(self, tmp_path, monkeypatch):
+        """Test that list-all handles corrupted YAML files gracefully."""
+        import yaml
+
+        # Setup: create config and aspect dir with corrupted aspect.yaml
+        config_file = tmp_path / ".shortcomings.yaml"
+        config_file.write_text("base_path: .\n")
+
+        aspects_dir = tmp_path / "aspects"
+        aspects_dir.mkdir()
+        aspect_dir = aspects_dir / "test-aspect"
+        aspect_dir.mkdir()
+        aspect_file = aspect_dir / "aspect.yaml"
+        # Write invalid YAML
+        aspect_file.write_text("name: test\n  invalid: indentation")
+
+        monkeypatch.chdir(tmp_path)
+
+        from typer.testing import CliRunner
+        from shortcomings.main import app
+
+        runner = CliRunner()
+        result = runner.invoke(app, ["list-all"])
+
+        # Should not crash with yaml.YAMLError - it should handle gracefully
+        # The exit code might be non-zero, but we check no traceback occurred
+        if result.exception:
+            assert not isinstance(result.exception, yaml.YAMLError), (
+                f"list-all raised yaml.YAMLError instead of handling gracefully: {result.exception}"
+            )
+
+    def test_list_shortcomings_handles_corrupted_yaml_files(self, tmp_path, monkeypatch):
+        """Test that list-shortcomings handles corrupted YAML files gracefully."""
+        import yaml
+
+        # Setup: create config and aspect dir with corrupted shortcoming.yaml
+        config_file = tmp_path / ".shortcomings.yaml"
+        config_file.write_text("base_path: .\n")
+
+        aspects_dir = tmp_path / "aspects"
+        aspects_dir.mkdir()
+        aspect_dir = aspects_dir / "test-aspect"
+        aspect_dir.mkdir()
+
+        # Create a valid aspect.yaml
+        aspect_file = aspect_dir / "aspect.yaml"
+        aspect_file.write_text("name: test-aspect\n")
+
+        # Create shortcoming dir with corrupted shortcoming
+        sc_dir = aspect_dir / "shortcomings"
+        sc_dir.mkdir()
+        sc_file = sc_dir / "broken.yaml"
+        # Write invalid YAML
+        sc_file.write_text("title: broken\n  invalid: indentation")
+
+        monkeypatch.chdir(tmp_path)
+
+        from typer.testing import CliRunner
+        from shortcomings.main import app
+
+        runner = CliRunner()
+        result = runner.invoke(app, ["list-shortcomings"])
+
+        # Should not crash with yaml.YAMLError - it should handle gracefully
+        if result.exception:
+            assert not isinstance(result.exception, yaml.YAMLError), (
+                f"list-shortcomings raised yaml.YAMLError instead of handling gracefully: {result.exception}"
+            )
+
+
 class TestListing:
     """Tests for list-all command."""
 
