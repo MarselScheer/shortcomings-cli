@@ -346,6 +346,44 @@ class TestRobustnessImplicitDirectoryStructure:
         # Should still list the valid aspect
         assert "valid" in result.output
 
+    def test_list_shortcomings_handles_missing_shortcomings_dir(self, cli_runner):
+        """Test that list-shortcomings doesn't crash when aspect lacks shortcomings/ dir."""
+        # Create a valid aspect but don't add any shortcomings
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        # Create another aspect directory without shortcomings folder
+        aspects_dir = Path("aspects")
+        (aspects_dir / "no-shortcomings").mkdir()
+        (aspects_dir / "no-shortcomings" / "aspect.yaml").write_text("name: no-shortcomings\n")
+
+        result = cli_runner.invoke(app, ["list-shortcomings"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+
+    def test_list_shortcomings_handles_stray_file_in_aspects(self, cli_runner):
+        """Test that list-shortcomings doesn't crash when aspects/ contains a stray file."""
+        # Create a valid aspect
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        # Create a stray file in aspects directory
+        aspects_dir = Path("aspects")
+        (aspects_dir / "README.md").write_text("# Aspects")
+
+        result = cli_runner.invoke(app, ["list-shortcomings"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+
+    def test_list_shortcomings_handles_no_aspects_dir(self, cli_runner):
+        """Test that list-shortcomings handles missing aspects directory gracefully."""
+        # Don't create any aspects - aspects directory won't exist
+
+        result = cli_runner.invoke(app, ["list-shortcomings"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+
 
 class TestListShortcomings:
     """Tests for list-shortcomings command."""
