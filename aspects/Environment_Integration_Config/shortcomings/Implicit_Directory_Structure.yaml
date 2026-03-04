@@ -1,7 +1,0 @@
-criticality: medium
-depends_on: ''
-description: list-all assumes every aspect dir contains aspect.yaml; crashes if missing
-tags:
-- robustness
-- error-handling
-title: Implicit_Directory_Structure

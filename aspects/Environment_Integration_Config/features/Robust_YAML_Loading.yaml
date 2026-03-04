@@ -1,5 +1,6 @@
 description: Added a safe_load_yaml helper that handles yaml.YAMLError gracefully,
-  providing clear error messages and exit code 1 on failure.
+  and made list-all/list-shortcomings robust against malformed aspect directories
+  (missing aspect.yaml, missing shortcomings/ folder, stray files in aspects/).
 tags:
 - robustness
 - error-handling

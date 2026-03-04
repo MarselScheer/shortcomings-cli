@@ -193,6 +193,11 @@ def list_all():
 
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
+        # Skip non-directories (stray files like README.md, .DS_Store) and
+        # directories without aspect.yaml (incomplete/malformed aspects)
+        if not aspect_file.exists():
+            continue
+
         aspect_data = safe_load_yaml(aspect_file)
         aspect_data["type"] = "aspect"
         print(json.dumps(aspect_data))
@@ -221,6 +226,10 @@ def list_shortcomings(
 
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
+
+    # Guard: if aspects directory doesn't exist, return gracefully
+    if not aspects_dir.exists():
+        return
 
     for aspect_path in aspects_dir.iterdir():
         shortcomings_dir = aspect_path / "shortcomings"
