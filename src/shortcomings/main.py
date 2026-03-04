@@ -193,6 +193,10 @@ def list_all():
 
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
+        # Skip directories without aspect.yaml (incomplete/malformed aspects)
+        if not aspect_file.exists():
+            continue
+
         aspect_data = safe_load_yaml(aspect_file)
         aspect_data["type"] = "aspect"
         print(json.dumps(aspect_data))

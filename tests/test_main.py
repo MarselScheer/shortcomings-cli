@@ -323,6 +323,30 @@ class TestListing:
         assert "test-f" in result.output
 
 
+class TestRobustnessImplicitDirectoryStructure:
+    """Tests for Implicit_Directory_Structure shortcoming.
+
+    Ensures list-all and list-shortcomings handle malformed directories gracefully.
+    """
+
+    def test_list_all_handles_missing_aspect_yaml(self, cli_runner):
+        """Test that list-all doesn't crash when aspect directory lacks aspect.yaml."""
+        # Create aspects directory with a subdirectory that's missing aspect.yaml
+        aspects_dir = Path("aspects")
+        aspects_dir.mkdir()
+        (aspects_dir / "incomplete-aspect").mkdir()
+
+        # Also create a valid aspect for comparison
+        cli_runner.invoke(app, ["add-aspect", "valid", "A valid aspect"])
+
+        result = cli_runner.invoke(app, ["list-all"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+        # Should still list the valid aspect
+        assert "valid" in result.output
+
+
 class TestListShortcomings:
     """Tests for list-shortcomings command."""
 
