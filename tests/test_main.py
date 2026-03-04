@@ -346,6 +346,22 @@ class TestRobustnessImplicitDirectoryStructure:
         # Should still list the valid aspect
         assert "valid" in result.output
 
+    def test_list_all_handles_stray_file_in_aspects(self, cli_runner):
+        """Test that list-all doesn't crash when aspects/ contains a stray file."""
+        # Create a valid aspect
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        # Create a stray file in aspects directory
+        aspects_dir = Path("aspects")
+        (aspects_dir / "README.md").write_text("# Aspects")
+
+        result = cli_runner.invoke(app, ["list-all"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+        # Should still list the valid aspect
+        assert "api" in result.output
+
     def test_list_shortcomings_handles_missing_shortcomings_dir(self, cli_runner):
         """Test that list-shortcomings doesn't crash when aspect lacks shortcomings/ dir."""
         # Create a valid aspect but don't add any shortcomings

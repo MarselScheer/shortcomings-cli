@@ -193,7 +193,8 @@ def list_all():
 
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
-        # Skip directories without aspect.yaml (incomplete/malformed aspects)
+        # Skip non-directories (stray files like README.md, .DS_Store) and
+        # directories without aspect.yaml (incomplete/malformed aspects)
         if not aspect_file.exists():
             continue
 
