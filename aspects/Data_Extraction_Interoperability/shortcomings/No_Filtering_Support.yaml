@@ -1,5 +1,5 @@
 criticality: low
-depends_on: ''
+depends_on: 'us only'
 description: list-all command cannot filter by criticality, status, or aspect
 tags:
 - reporting

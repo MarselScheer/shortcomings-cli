@@ -1,5 +1,5 @@
 criticality: medium
-depends_on: ''
+depends_on: 'us only'
 description: No automatic creation timestamps, making it hard to track history
 tags:
 - metadata

@@ -1,5 +1,5 @@
 criticality: medium
-depends_on: ''
+depends_on: 'us only'
 description: There is no command to list all available aspects
 tags:
 - ux
