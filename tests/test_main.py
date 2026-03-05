@@ -1,3 +1,17 @@
+class TestAddShortcomingHelpText:
+    """Tests for add-shortcoming command help text."""
+
+    def test_add_shortcoming_depends_on_help_text_mentions_external_dependencies(self):
+        """Test that --depends-on help text explains it can include external dependencies."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["add-shortcoming", "--help"])
+        assert result.exit_code == 0
+
+        # The help text should mention that depends_on can describe dependencies
+        # on people outside the developer team
+        assert "outside" in result.output.lower() or "others" in result.output.lower(), (
+            "Help text for --depends-on should mention external/others dependencies"
+        )
 """Consolidated tests for shortcomings CLI."""
 
 import json
