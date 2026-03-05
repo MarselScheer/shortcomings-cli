@@ -1,3 +1,9 @@
+"""Shortcomings CLI - A command-line interface for managing project aspects, features, and shortcomings.
+
+This module provides a Typer-based CLI for managing project aspects, features,
+and shortcomings in a structured YAML format.
+"""
+
 from typing import Literal
 
 import typer
@@ -11,6 +17,7 @@ from shortcomings.engine import (
 )
 
 VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
+"""Set of valid criticality values for shortcomings."""
 
 
 app = typer.Typer(help="Shortcomings CLI", add_completion=False)
@@ -23,7 +30,15 @@ def main_callback(
         False, "--version", help="Show version", is_eager=True
     ),
 ):
-    """Shortcomings CLI"""
+    """Main callback for the Shortcomings CLI.
+
+    Handles global options like --version and displays help when no subcommand
+    is provided.
+
+    Args:
+        ctx: The Typer context.
+        version: Whether to show the version information.
+    """
     if version:
         typer.echo(get_package_version())
         raise typer.Exit(code=0)
@@ -36,7 +51,18 @@ def main_callback(
 
 @app.command()
 def add_aspect(name: str, user_story: str):
-    """Add a new aspect."""
+    """Add a new aspect to the project.
+
+    Creates a new aspect directory with an aspect.yaml file containing the
+    aspect name and user story.
+
+    Args:
+        name: The unique name for the aspect.
+        user_story: The user story describing the aspect.
+
+    Raises:
+        typer.Exit: If an aspect with the given name already exists.
+    """
     validate_name(name)
     base_path = get_base_path()
 
@@ -65,7 +91,19 @@ def add_feature(
     description: str = "",
     tags: str = "",
 ):
-    """Add a new feature to an aspect."""
+    """Add a new feature to an aspect.
+
+    Creates a new YAML file in the aspect's features directory.
+
+    Args:
+        aspect: The name of the aspect to add the feature to.
+        name: The unique name for the feature.
+        description: An optional description of the feature.
+        tags: Comma-separated tags for the feature.
+
+    Raises:
+        typer.Exit: If the feature or aspect doesn't exist.
+    """
     base_path = get_base_path()
 
     features_dir = base_path / "aspects" / aspect / "features"
@@ -103,7 +141,21 @@ def add_shortcoming(
         help="Describe if solving this shortcoming depends on others outside the developer team (e.g. stakeholders, other teams)",
     ),
 ):
-    """Add a new shortcoming to an aspect."""
+    """Add a new shortcoming to an aspect.
+
+    Creates a new YAML file in the aspect's shortcomings directory.
+
+    Args:
+        aspect: The name of the aspect to add the shortcoming to.
+        name: The unique name for the shortcoming.
+        description: An optional description of the shortcoming.
+        criticality: The criticality level (low, medium, high, critical).
+        tags: Comma-separated tags for the shortcoming.
+        depends_on: Description of external dependencies for solving the shortcoming.
+
+    Raises:
+        typer.Exit: If the shortcoming already exists or criticality is invalid.
+    """
     # Validate criticality
     if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
         valid_values = ", ".join(sorted(VALID_CRITICALITY_VALUES))
@@ -143,7 +195,15 @@ def add_shortcoming(
 
 @app.command()
 def list_all():
-    """List all aspects, features and shortcomings in JSONL format."""
+    """List all aspects, features, and shortcomings in JSONL format.
+
+    Iterates through all aspects in the aspects directory and prints each
+    aspect, feature, and shortcoming as a JSON line to stdout.
+
+    Output:
+        Each line contains a JSON object with 'type' field indicating
+        whether it's an aspect, feature, or shortcoming.
+    """
     import json
 
     base_path = get_base_path()
@@ -183,7 +243,18 @@ def list_all():
 def list_shortcomings(
     criticality: str | None = None,
 ):
-    """List all shortcomings in JSONL format, optionally filtered by criticality."""
+    """List all shortcomings in JSONL format, optionally filtered by criticality.
+
+    Iterates through all aspects and prints shortcomings as JSON lines.
+    Can be filtered by criticality level if specified.
+
+    Args:
+        criticality: Optional filter to only show shortcomings of this criticality level.
+
+    Output:
+        Each line contains a JSON object representing a shortcoming,
+        including 'type' and 'aspect' fields.
+    """
     import json
 
     base_path = get_base_path()
