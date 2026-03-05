@@ -1,5 +1,5 @@
 criticality: medium
-depends_on: ''
+depends_on: 'us only'
 description: Only JSONL output is supported; no human-readable table or summary view
 tags:
 - reporting

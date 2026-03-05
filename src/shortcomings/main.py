@@ -139,7 +139,7 @@ def add_shortcoming(
     description: str = "",
     criticality: Literal["low", "medium", "high", "critical"] = "critical",
     tags: str = "",
-    depends_on: str = "",
+    depends_on: str = typer.Option("us only", help="Describe if solving this shortcoming depends on others outside the developer team (e.g. stakeholders, other teams)"),
 ):
     """Add a new shortcoming to an aspect."""
     # Validate criticality

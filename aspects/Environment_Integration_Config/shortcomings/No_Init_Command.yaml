@@ -1,5 +1,5 @@
 criticality: low
-depends_on: ''
+depends_on: 'us only'
 description: No interactive init command to create .shortcomings.yaml
 tags:
 - ux

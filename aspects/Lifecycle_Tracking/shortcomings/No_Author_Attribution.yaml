@@ -1,5 +1,5 @@
 criticality: low
-depends_on: ''
+depends_on: 'us only'
 description: No automatic capture of who created a feature or shortcoming
 tags:
 - metadata

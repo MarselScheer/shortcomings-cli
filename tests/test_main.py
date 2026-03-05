@@ -185,6 +185,31 @@ class TestShortcomingManagement:
             for word in ["low", "medium", "high", "critical", "valid"]
         )
 
+    def test_add_shortcoming_default_depends_on(self, cli_runner):
+        """Test that depends_on defaults to 'us only' when not specified."""
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+
+        result = cli_runner.invoke(
+            app,
+            [
+                "add-shortcoming",
+                "ci",
+                "slow-builds",
+                "--description",
+                "Builds take too long",
+            ],
+        )
+        assert result.exit_code == 0
+
+        sc_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
+        assert sc_file.exists()
+        assert_yaml_content(
+            sc_file,
+            {
+                "depends_on": "us only",
+            },
+        )
+
 
 class TestConfigRobustness:
     """Tests for robust YAML loading."""
@@ -370,7 +395,9 @@ class TestRobustnessImplicitDirectoryStructure:
         # Create another aspect directory without shortcomings folder
         aspects_dir = Path("aspects")
         (aspects_dir / "no-shortcomings").mkdir()
-        (aspects_dir / "no-shortcomings" / "aspect.yaml").write_text("name: no-shortcomings\n")
+        (aspects_dir / "no-shortcomings" / "aspect.yaml").write_text(
+            "name: no-shortcomings\n"
+        )
 
         result = cli_runner.invoke(app, ["list-shortcomings"])
 
@@ -443,3 +470,29 @@ class TestListShortcomings:
         obj = json.loads(lines[0])
         assert obj["title"] == expected_title
         assert obj["criticality"] == criticality
+
+
+class TestHelpText:
+    """Tests for command help text."""
+
+    def test_cli_no_args_shows_help(self):
+        """Running the CLI without arguments should display help."""
+        runner = CliRunner()
+        result = runner.invoke(app, [])
+
+        # Help output should contain "Usage:"
+        assert "Usage:" in result.output, (
+            f"Expected help output but got: {result.output!r}"
+        )
+
+    def test_add_shortcoming_depends_on_help_text_mentions_external_dependencies(self):
+        """Test that --depends-on help text explains it can include external dependencies."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["add-shortcoming", "--help"])
+        assert result.exit_code == 0
+
+        # The help text should mention that depends_on can describe dependencies
+        # on people outside the developer team
+        assert (
+            "outside" in result.output.lower() or "others" in result.output.lower()
+        ), "Help text for --depends-on should mention external/others dependencies"
