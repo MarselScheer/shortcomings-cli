@@ -1,0 +1,7 @@
+description: YAML files are human-friendly enough that users can directly edit them
+  in their preferred editor. No complex edit command is needed - users simply open
+  the relevant YAML file and make changes. This keeps the tool simple and leverages
+  existing editor workflows.
+tags:
+- workflow
+title: Direct_YAML_Editing

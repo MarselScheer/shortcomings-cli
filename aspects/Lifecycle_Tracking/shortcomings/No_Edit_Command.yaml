@@ -1,7 +1,0 @@
-criticality: high
-depends_on: ''
-description: Users must manually edit files to modify records
-tags:
-- ux
-- workflow
-title: No_Edit_Command
