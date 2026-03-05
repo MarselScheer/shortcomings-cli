@@ -5,7 +5,8 @@ import yaml
 import pytest
 from pathlib import Path
 from typer.testing import CliRunner
-from shortcomings.main import app, find_config_path, get_base_path
+from shortcomings.cli import app
+from shortcomings.engine import find_config_path, get_base_path
 
 
 # --- Fixtures & Helpers ---
