@@ -185,6 +185,31 @@ class TestShortcomingManagement:
             for word in ["low", "medium", "high", "critical", "valid"]
         )
 
+    def test_add_shortcoming_default_depends_on(self, cli_runner):
+        """Test that depends_on defaults to 'us only' when not specified."""
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+
+        result = cli_runner.invoke(
+            app,
+            [
+                "add-shortcoming",
+                "ci",
+                "slow-builds",
+                "--description",
+                "Builds take too long",
+            ],
+        )
+        assert result.exit_code == 0
+
+        sc_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
+        assert sc_file.exists()
+        assert_yaml_content(
+            sc_file,
+            {
+                "depends_on": "us only",
+            },
+        )
+
 
 class TestConfigRobustness:
     """Tests for robust YAML loading."""

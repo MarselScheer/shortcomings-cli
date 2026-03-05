@@ -139,7 +139,7 @@ def add_shortcoming(
     description: str = "",
     criticality: Literal["low", "medium", "high", "critical"] = "critical",
     tags: str = "",
-    depends_on: str = "",
+    depends_on: str = "us only",
 ):
     """Add a new shortcoming to an aspect."""
     # Validate criticality
