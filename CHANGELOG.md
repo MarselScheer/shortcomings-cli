@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.8] - 2026-03-04
+## [0.0.9] - 2026-03-05
+
+### Added
+- Support for "us only" dependency in aspects.
+
+### Changed
+- Set default `depends_on` to 'us only' in `add_shortcoming` command.
+- Enhanced `add_shortcoming` help text for the `depends_on` field.
+- Consolidated and improved CLI tests.
+
+## [0.0.8] - 2026-03-05
 
 ### Added
 - `Direct_YAML_Editing` feature in Lifecycle_Tracking: Users can directly edit YAML files in their preferred editor since the format is human-friendly. No complex edit command is needed.
