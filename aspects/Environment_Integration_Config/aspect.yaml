@@ -1,3 +1,4 @@
 name: Environment_Integration_Config
 user_story: As a user, I want the tool to automatically find its configuration in
   my project tree so that I don't have to specify paths manually every time.
+created_at: '2026-03-06'
