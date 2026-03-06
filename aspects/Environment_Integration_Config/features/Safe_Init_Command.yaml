@@ -1,0 +1,7 @@
+description: The init command will not overwrite an existing .shortcomings.yaml file
+  and will exit with an error instead
+tags:
+- ux
+- onboarding
+- safety
+title: Safe_Init_Command

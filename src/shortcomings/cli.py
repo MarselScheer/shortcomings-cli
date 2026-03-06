@@ -5,6 +5,7 @@ and shortcomings in a structured YAML format.
 """
 
 from datetime import date
+from pathlib import Path
 from typing import Literal
 
 import typer
@@ -22,6 +23,19 @@ VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
 
 
 app = typer.Typer(help="Shortcomings CLI", add_completion=False)
+
+
+@app.command()
+def init():
+    """Initialize a new .shortcomings.yaml configuration file."""
+    config_file = Path(".shortcomings.yaml")
+    if config_file.exists():
+        typer.echo(f"Error: {config_file} already exists. Aborting.")
+        raise typer.Exit(code=1)
+    config_data = {"base_path": "."}
+    with open(config_file, "w") as f:
+        yaml.dump(config_data, f)
+    typer.echo(f"Created {config_file}")
 
 
 @app.callback(invoke_without_command=True)
