@@ -85,6 +85,20 @@ class TestAspectManagement:
         assert result.exit_code != 0
         assert "already exists" in result.output.lower()
 
+    def test_add_aspect_includes_created_at_date(self, cli_runner):
+        """Test that add-aspect includes created_at in yyyy-mm-dd format."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        result = cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        assert result.exit_code == 0
+
+        aspect_file = Path("aspects") / "api" / "aspect.yaml"
+        assert aspect_file.exists()
+        content = yaml.safe_load(aspect_file.read_text())
+        assert "created_at" in content, "Aspect should include created_at field"
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
+
 
 class TestFeatureManagement:
     """Tests for add-feature command."""
@@ -126,6 +140,21 @@ class TestFeatureManagement:
         result = cli_runner.invoke(app, ["add-feature", "ci", "github-actions"])
         assert result.exit_code != 0
         assert "already exists" in result.output.lower()
+
+    def test_add_feature_includes_created_at_date(self, cli_runner):
+        """Test that add-feature includes created_at in yyyy-mm-dd format."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        result = cli_runner.invoke(app, ["add-feature", "ci", "github-actions"])
+        assert result.exit_code == 0
+
+        feature_file = Path("aspects") / "ci" / "features" / "github-actions.yaml"
+        assert feature_file.exists()
+        content = yaml.safe_load(feature_file.read_text())
+        assert "created_at" in content, "Feature should include created_at field"
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
 
 
 class TestShortcomingManagement:
@@ -210,6 +239,30 @@ class TestShortcomingManagement:
                 "depends_on": "us only",
             },
         )
+
+    def test_add_shortcoming_includes_created_at_date(self, cli_runner):
+        """Test that add-shortcoming includes created_at in yyyy-mm-dd format."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+        result = cli_runner.invoke(
+            app,
+            [
+                "add-shortcoming",
+                "ci",
+                "slow-builds",
+                "--description",
+                "Builds take too long",
+            ],
+        )
+        assert result.exit_code == 0
+
+        sc_file = Path("aspects") / "ci" / "shortcomings" / "slow-builds.yaml"
+        assert sc_file.exists()
+        content = yaml.safe_load(sc_file.read_text())
+        assert "created_at" in content, "Shortcoming should include created_at field"
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
 
 
 class TestConfigRobustness:
