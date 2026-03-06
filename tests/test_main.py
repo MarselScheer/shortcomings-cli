@@ -367,6 +367,20 @@ class TestInitCommand:
             assert "base_path" in content, "Config should have base_path key"
             assert content["base_path"] == ".", "Default base_path should be '.'"
 
+    def test_init_does_not_overwrite_existing_file(self):
+        """Test that init command does not overwrite an existing .shortcomings.yaml file."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            config_file = Path(".shortcomings.yaml")
+            original_content = "base_path: ./custom"
+            config_file.write_text(original_content)
+
+            result = runner.invoke(app, ["init"])
+            assert result.exit_code != 0, "Init should fail when file exists"
+
+            current_content = config_file.read_text()
+            assert current_content == original_content, "Existing file should not be overwritten"
+
 
 class TestVersion:
     """Tests for --version flag."""

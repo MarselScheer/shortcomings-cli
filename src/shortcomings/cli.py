@@ -29,6 +29,9 @@ app = typer.Typer(help="Shortcomings CLI", add_completion=False)
 def init():
     """Initialize a new .shortcomings.yaml configuration file."""
     config_file = Path(".shortcomings.yaml")
+    if config_file.exists():
+        typer.echo(f"Error: {config_file} already exists. Aborting.")
+        raise typer.Exit(code=1)
     config_data = {"base_path": "."}
     with open(config_file, "w") as f:
         yaml.dump(config_data, f)
