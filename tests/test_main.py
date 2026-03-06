@@ -365,6 +365,27 @@ class TestVersion:
 class TestListing:
     """Tests for list-all command."""
 
+    def test_list_all_includes_created_at(self, cli_runner):
+        """Test that list-all outputs created_at field for aspects, features, shortcomings."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        # Create items which should include created_at
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-feature", "api", "rest-api"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        result = cli_runner.invoke(app, ["list-all"])
+        assert result.exit_code == 0
+
+        lines = [line for line in result.output.strip().split("\n") if line]
+        assert len(lines) == 3
+
+        for line in lines:
+            obj = json.loads(line)
+            assert "created_at" in obj, f"Item of type {obj.get('type')} should include created_at"
+            assert obj["created_at"] == today, f"Item of type {obj.get('type')} should have created_at equal to today ({today})"
+
     def test_list_all_outputs_jsonl(self, cli_runner):
         """Test that list-all outputs entities in JSONL format."""
         cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
@@ -484,6 +505,24 @@ class TestRobustnessImplicitDirectoryStructure:
 
 class TestListShortcomings:
     """Tests for list-shortcomings command."""
+
+    def test_list_shortcomings_includes_created_at(self, cli_runner):
+        """Test that list-shortcomings outputs created_at field."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        result = cli_runner.invoke(app, ["list-shortcomings"])
+        assert result.exit_code == 0
+
+        lines = [line for line in result.output.strip().split("\n") if line]
+        assert len(lines) == 1
+
+        obj = json.loads(lines[0])
+        assert "created_at" in obj, "Shortcoming should include created_at"
+        assert obj["created_at"] == today, f"Shortcoming should have created_at equal to today ({today})"
 
     @pytest.mark.parametrize(
         "criticality,expected_title",

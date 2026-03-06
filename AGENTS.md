@@ -25,3 +25,4 @@ Do NOT use `cd` before make targets; make handles directory context internally (
 - `make fix` - Auto-fix lint issues
 - `make typecheck` - Type check with ty
 - `make check` - Run all checks (lint + typecheck)
+- `uv run src/shortcomings/main.py [OPTIONS] COMMAND [ARGS]` - to use the shorcoming tool as defined by the current code base
