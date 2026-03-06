@@ -350,6 +350,24 @@ def _create_aspect_with_invalid_yaml(
     target_file.write_text("title: broken\n  invalid: indentation")
 
 
+class TestInitCommand:
+    """Tests for init command."""
+
+    def test_init_creates_config_file(self):
+        """Test that init command creates .shortcomings.yaml file."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(app, ["init"])
+            assert result.exit_code == 0
+
+            config_file = Path(".shortcomings.yaml")
+            assert config_file.exists(), ".shortcomings.yaml should be created"
+
+            content = yaml.safe_load(config_file.read_text())
+            assert "base_path" in content, "Config should have base_path key"
+            assert content["base_path"] == ".", "Default base_path should be '.'"
+
+
 class TestVersion:
     """Tests for --version flag."""
 
