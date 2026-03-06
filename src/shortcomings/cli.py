@@ -4,6 +4,7 @@ This module provides a Typer-based CLI for managing project aspects, features,
 and shortcomings in a structured YAML format.
 """
 
+from datetime import date
 from typing import Literal
 
 import typer
@@ -77,6 +78,7 @@ def add_aspect(name: str, user_story: str):
     aspect_data = {
         "name": name,
         "user_story": user_story,
+        "created_at": date.today().isoformat(),
     }
     with open(aspect_file, "w") as f:
         yaml.dump(aspect_data, f)
@@ -122,6 +124,7 @@ def add_feature(
         "title": name,
         "description": description,
         "tags": tags_list,
+        "created_at": date.today().isoformat(),
     }
     with open(feature_file, "w") as f:
         yaml.dump(feature_data, f)
@@ -186,6 +189,7 @@ def add_shortcoming(
         "criticality": criticality,
         "tags": tags_list,
         "depends_on": depends_on,
+        "created_at": date.today().isoformat(),
     }
     with open(shortcoming_file, "w") as f:
         yaml.dump(shortcoming_data, f)
