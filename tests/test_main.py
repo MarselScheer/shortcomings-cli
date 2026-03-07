@@ -583,6 +583,16 @@ class TestListAspects:
         # Should still list the valid aspect
         assert "api" in result.output
 
+    def test_list_aspects_handles_missing_aspects_dir(self, cli_runner):
+        """Test that list-aspects doesn't crash when aspects/ directory is missing."""
+        # Don't create any aspects - aspects directory won't exist
+        result = cli_runner.invoke(app, ["list-aspects"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+        # Should return empty output
+        assert result.output.strip() == ""
+
 
 class TestListShortcomings:
     """Tests for list-shortcomings command."""

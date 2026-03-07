@@ -260,6 +260,11 @@ def list_all():
 def list_aspects():
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
+
+    # Guard: if aspects directory doesn't exist, return gracefully
+    if not aspects_dir.exists():
+        return
+
     for aspect_path in aspects_dir.iterdir():
         aspect_file = aspect_path / "aspect.yaml"
         if not aspect_file.exists():
