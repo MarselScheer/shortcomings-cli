@@ -4,6 +4,7 @@ This module provides a Typer-based CLI for managing project aspects, features,
 and shortcomings in a structured YAML format.
 """
 
+import json
 from datetime import date
 from pathlib import Path
 from typing import Literal
@@ -222,8 +223,6 @@ def list_all():
         Each line contains a JSON object with 'type' field indicating
         whether it's an aspect, feature, or shortcoming.
     """
-    import json
-
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
 
@@ -259,7 +258,6 @@ def list_all():
 
 @app.command()
 def list_aspects():
-    import json
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
     for aspect_path in aspects_dir.iterdir():
@@ -287,8 +285,6 @@ def list_shortcomings(
         Each line contains a JSON object representing a shortcoming,
         including 'type' and 'aspect' fields.
     """
-    import json
-
     base_path = get_base_path()
     aspects_dir = base_path / "aspects"
 

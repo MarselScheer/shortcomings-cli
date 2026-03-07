@@ -1,8 +1,0 @@
-criticality: medium
-depends_on: us only
-description: There is no command to list all available aspects
-tags:
-- ux
-- mvp
-title: No_List_Aspects_Command
-created_at: '2026-03-06'
