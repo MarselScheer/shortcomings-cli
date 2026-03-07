@@ -1,8 +1,0 @@
-criticality: medium
-depends_on: us only
-description: No automatic creation timestamps, making it hard to track history
-tags:
-- metadata
-- tracking
-title: Missing_Timestamps
-created_at: '2026-03-06'
