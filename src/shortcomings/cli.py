@@ -258,6 +258,20 @@ def list_all():
 
 
 @app.command()
+def list_aspects():
+    import json
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+    for aspect_path in aspects_dir.iterdir():
+        aspect_file = aspect_path / "aspect.yaml"
+        if not aspect_file.exists():
+            continue
+        aspect_data = safe_load_yaml(aspect_file)
+        aspect_data["type"] = "aspect"
+        print(json.dumps(aspect_data))
+
+
+@app.command()
 def list_shortcomings(
     criticality: str | None = None,
 ):
