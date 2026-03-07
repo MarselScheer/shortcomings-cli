@@ -1,0 +1,12 @@
+created_at: '2026-03-07'
+criticality: medium
+depends_on: us only
+description: The list-aspects command doesn't handle malformed or empty YAML files
+  gracefully. If safe_load_yaml raises an exception or returns None for an empty file,
+  the command crashes instead of skipping the file and continuing.
+tags:
+- bug
+- list-aspects
+- yaml
+- robustness
+title: List Aspects Fragile YAML Handling

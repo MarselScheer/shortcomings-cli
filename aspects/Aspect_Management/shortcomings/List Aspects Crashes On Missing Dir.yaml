@@ -1,0 +1,11 @@
+created_at: '2026-03-07'
+criticality: high
+depends_on: us only
+description: The list-aspects command crashes with FileNotFoundError when the aspects/
+  directory does not exist, unlike list-shortcomings and list-all which have guard
+  clauses for missing directories.
+tags:
+- bug
+- list-aspects
+- error-handling
+title: List Aspects Crashes On Missing Dir

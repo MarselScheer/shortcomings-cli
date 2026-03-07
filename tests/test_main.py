@@ -535,6 +535,55 @@ class TestRobustnessImplicitDirectoryStructure:
         assert result.exit_code == 0
 
 
+class TestListAspects:
+    """Tests for list-aspects command."""
+
+    def test_list_aspects_outputs_jsonl(self, cli_runner):
+        """Test that list-aspects outputs entities in JSONL format with type aspect."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        result = cli_runner.invoke(app, ["list-aspects"])
+        assert result.exit_code == 0
+
+        lines = result.output.strip().split("\n")
+        assert len(lines) == 1
+        obj = json.loads(lines[0])
+        assert obj["type"] == "aspect"
+        assert obj["name"] == "api"
+
+    def test_list_aspects_only_returns_aspects(self, cli_runner):
+        """Test that list-aspects only returns aspects, not features or shortcomings."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-feature", "api", "rest-api"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        result = cli_runner.invoke(app, ["list-aspects"])
+        assert result.exit_code == 0
+
+        lines = [line for line in result.output.strip().split("\n") if line]
+        assert len(lines) == 1
+        obj = json.loads(lines[0])
+        assert obj["type"] == "aspect"
+        assert "rest-api" not in result.output  # Feature should not appear
+        assert "no-auth" not in result.output   # Shortcoming should not appear
+
+    def test_list_aspects_handles_stray_file_in_aspects(self, cli_runner):
+        """Test that list-aspects doesn't crash when aspects/ contains a stray file."""
+        # Create a valid aspect
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        # Create a stray file in aspects directory
+        aspects_dir = Path("aspects")
+        (aspects_dir / "README.md").write_text("# Aspects")
+
+        result = cli_runner.invoke(app, ["list-aspects"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+        # Should still list the valid aspect
+        assert "api" in result.output
+
+
 class TestListShortcomings:
     """Tests for list-shortcomings command."""
 
