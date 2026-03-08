@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-03-08
+
+### Added
+- Name validation for `add-feature` and `add-shortcoming` commands - names cannot contain spaces or special characters (enforced via `validate_name()` function).
+- `_get_aspects_dir()` helper in engine.py that combines base path lookup with existence check, returning `None` gracefully if directory doesn't exist.
+- Unit tests for invalid name validation: `test_add_feature_invalid_name_fails` and `test_add_shortcoming_invalid_name_fails`.
+
+### Changed
+- Refactored `list-aspects`, `list-shortcomings`, and `list-all` commands to use the new `_get_aspects_dir()` helper for unified error handling.
+- Consolidated two separate features into one: `Graceful_Missing_Dir` + `Robust_YAML_Loading` → `Robust_Aspect_Directory_And_YAML_Handling`.
+- Improved test formatting by adding line breaks in multi-line assertions for better readability.
+
+### Fixed
+- Fixed naming inconsistency: shortcoming file `List Aspects Fragile YAML Handling.yaml` now uses underscores (`List_Aspects_Fragile_YAML_Handling.yaml`).
+
+### Removed
+- Removed feature `Graceful_Missing_Dir.yaml` (merged into `Robust_Aspect_Directory_And_YAML_Handling.yaml`).
+- Removed feature `Robust_YAML_Loading.yaml` (merged into `Robust_Aspect_Directory_And_YAML_Handling.yaml`).
+
 ## [0.3.2] - 2026-03-07
 
 ### Fixed
