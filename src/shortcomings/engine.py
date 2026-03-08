@@ -6,24 +6,10 @@ input validation.
 
 """
 
-import re
-from importlib.metadata import version as get_version
 from pathlib import Path
 
 import typer
 import yaml
-
-
-def get_package_version() -> str:
-    """Get the version of the installed package.
-
-    Returns:
-        str: The package version string, or "0.0.0" if it cannot be determined.
-    """
-    try:
-        return get_version("shortcomings-cli")
-    except Exception:
-        return "0.0.0"
 
 
 def safe_load_yaml(path: Path) -> dict:
@@ -75,34 +61,3 @@ def get_base_path() -> Path:
     config_path = find_config_path()
     config = safe_load_yaml(config_path)
     return Path(config["base_path"])
-
-
-def validate_name(name: str):
-    """Validate that name contains only alphanumeric characters, dashes, or underscores.
-
-    Args:
-        name: The string name to validate.
-
-    Raises:
-        typer.Exit: If the name contains invalid characters.
-    """
-    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
-        typer.echo(
-            f"Error: Invalid name '{name}'. Use only alphanumeric, dashes, or underscores.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-
-
-def _get_aspects_dir() -> Path | None:
-    """Get the aspects directory path, returning None if it doesn't exist.
-
-    This is a convenience helper that combines get_base_path() with the
-    aspects/ directory and checks for its existence.
-
-    Returns:
-        Path: The aspects directory path if it exists, None otherwise.
-    """
-    base_path = get_base_path()
-    aspects_dir = base_path / "aspects"
-    return aspects_dir if aspects_dir.exists() else None
