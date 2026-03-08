@@ -5,6 +5,7 @@ import yaml
 import pytest
 from pathlib import Path
 from typer.testing import CliRunner
+from unittest.mock import patch
 from shortcomings.cli import app
 
 
@@ -665,3 +666,90 @@ class TestHelpText:
         assert (
             "outside" in result.output.lower() or "others" in result.output.lower()
         ), "Help text for --depends-on should mention external/others dependencies"
+
+
+class TestGetBasePathCalled:
+    """Tests to verify get_base_path() is called by CLI commands."""
+
+    @pytest.fixture
+    def mock_base_path(self, tmp_path):
+        """Fixture that provides a mocked base path and mocks get_base_path."""
+        with patch("shortcomings.cli.get_base_path") as mock:
+            mock.return_value = tmp_path
+            yield mock
+
+    def test_add_aspect_calls_get_base_path(self, mock_base_path):
+        """Test that add-aspect command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            result = runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+            assert result.exit_code == 0
+            mock_base_path.assert_called_once()
+
+    def test_add_feature_calls_get_base_path(self, mock_base_path):
+        """Test that add-feature command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+            result = runner.invoke(app, ["add-feature", "ci", "github-actions"])
+
+            assert result.exit_code == 0
+            # Called once for add-aspect setup and once for add-feature
+            assert mock_base_path.call_count == 2
+
+    def test_add_shortcoming_calls_get_base_path(self, mock_base_path):
+        """Test that add-shortcoming command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
+            result = runner.invoke(
+                app, ["add-shortcoming", "ci", "slow-builds", "--description", "Test"]
+            )
+
+            assert result.exit_code == 0
+            # Called once for add-aspect setup and once for add-shortcoming
+            assert mock_base_path.call_count == 2
+
+    def test_list_all_calls_get_base_path(self, mock_base_path):
+        """Test that list-all command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+            result = runner.invoke(app, ["list-all"])
+
+            assert result.exit_code == 0
+            # Called once for add-aspect setup and once for list-all
+            assert mock_base_path.call_count == 2
+
+    def test_list_aspects_calls_get_base_path(self, mock_base_path):
+        """Test that list-aspects command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+            result = runner.invoke(app, ["list-aspects"])
+
+            assert result.exit_code == 0
+            # Called once for add-aspect setup and once for list-aspects
+            assert mock_base_path.call_count == 2
+
+    def test_list_shortcomings_calls_get_base_path(self, mock_base_path):
+        """Test that list-shortcomings command calls get_base_path()."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path(".shortcomings.yaml").write_text("base_path: .\n")
+            runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+            runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+            result = runner.invoke(app, ["list-shortcomings"])
+
+            assert result.exit_code == 0
+            # Called once for add-aspect, add-shortcomings setup and once for list-shortcomings
+            assert mock_base_path.call_count == 3
