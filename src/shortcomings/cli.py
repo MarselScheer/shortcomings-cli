@@ -4,8 +4,10 @@ This module provides a Typer-based CLI for managing project aspects, features,
 and shortcomings in a structured YAML format.
 """
 
+import re
 import json
 from datetime import date
+from importlib.metadata import version as get_version
 from pathlib import Path
 from typing import Literal
 
@@ -13,10 +15,7 @@ import typer
 import yaml
 
 from shortcomings.engine import (
-    _get_aspects_dir,
-    validate_name,
     get_base_path,
-    get_package_version,
     safe_load_yaml,
 )
 
@@ -40,6 +39,18 @@ def init():
     typer.echo(f"Created {config_file}")
 
 
+def _get_package_version() -> str:
+    """Get the version of the installed package.
+
+    Returns:
+        str: The package version string, or "0.0.0" if it cannot be determined.
+    """
+    try:
+        return get_version("shortcomings-cli")
+    except Exception:
+        return "0.0.0"
+
+
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
@@ -57,13 +68,30 @@ def main_callback(
         version: Whether to show the version information.
     """
     if version:
-        typer.echo(get_package_version())
+        typer.echo(_get_package_version())
         raise typer.Exit(code=0)
 
     # If no subcommand was invoked, show help
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
         raise typer.Exit(code=0)
+
+
+def _validate_name(name: str):
+    """Validate that name contains only alphanumeric characters, dashes, or underscores.
+
+    Args:
+        name: The string name to validate.
+
+    Raises:
+        typer.Exit: If the name contains invalid characters.
+    """
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
+        typer.echo(
+            f"Error: Invalid name '{name}'. Use only alphanumeric, dashes, or underscores.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
 
 @app.command()
@@ -80,7 +108,7 @@ def add_aspect(name: str, user_story: str):
     Raises:
         typer.Exit: If an aspect with the given name already exists.
     """
-    validate_name(name)
+    _validate_name(name)
     base_path = get_base_path()
 
     aspect_dir = base_path / "aspects" / name
@@ -122,7 +150,7 @@ def add_feature(
     Raises:
         typer.Exit: If the feature or aspect doesn't exist.
     """
-    validate_name(name)
+    _validate_name(name)
 
     base_path = get_base_path()
 
@@ -177,7 +205,7 @@ def add_shortcoming(
     Raises:
         typer.Exit: If the shortcoming already exists or criticality is invalid.
     """
-    validate_name(name)
+    _validate_name(name)
 
     # Validate criticality
     if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
@@ -215,6 +243,20 @@ def add_shortcoming(
         yaml.dump(shortcoming_data, f)
 
     typer.echo(f"Created shortcoming '{name}' at {shortcoming_file}")
+
+
+def _get_aspects_dir() -> Path | None:
+    """Get the aspects directory path, returning None if it doesn't exist.
+
+    This is a convenience helper that combines get_base_path() with the
+    aspects/ directory and checks for its existence.
+
+    Returns:
+        Path: The aspects directory path if it exists, None otherwise.
+    """
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+    return aspects_dir if aspects_dir.exists() else None
 
 
 @app.command()
