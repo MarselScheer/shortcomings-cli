@@ -92,3 +92,17 @@ def validate_name(name: str):
             err=True,
         )
         raise typer.Exit(code=1)
+
+
+def _get_aspects_dir() -> Path | None:
+    """Get the aspects directory path, returning None if it doesn't exist.
+
+    This is a convenience helper that combines get_base_path() with the
+    aspects/ directory and checks for its existence.
+
+    Returns:
+        Path: The aspects directory path if it exists, None otherwise.
+    """
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+    return aspects_dir if aspects_dir.exists() else None

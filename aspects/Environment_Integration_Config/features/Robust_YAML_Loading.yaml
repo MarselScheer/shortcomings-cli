@@ -1,8 +1,0 @@
-description: Added a safe_load_yaml helper that handles yaml.YAMLError gracefully,
-  and made list-all/list-shortcomings robust against malformed aspect directories
-  (missing aspect.yaml, missing shortcomings/ folder, stray files in aspects/).
-tags:
-- robustness
-- error-handling
-title: Robust_YAML_Loading
-created_at: '2026-03-06'
