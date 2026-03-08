@@ -13,6 +13,7 @@ import typer
 import yaml
 
 from shortcomings.engine import (
+    _get_aspects_dir,
     validate_name,
     get_base_path,
     get_package_version,
@@ -223,11 +224,8 @@ def list_all():
         Each line contains a JSON object with 'type' field indicating
         whether it's an aspect, feature, or shortcoming.
     """
-    base_path = get_base_path()
-    aspects_dir = base_path / "aspects"
-
-    # Guard: if aspects directory doesn't exist, return gracefully
-    if not aspects_dir.exists():
+    aspects_dir = _get_aspects_dir()
+    if aspects_dir is None:
         return
 
     for aspect_path in aspects_dir.iterdir():
@@ -258,11 +256,8 @@ def list_all():
 
 @app.command()
 def list_aspects():
-    base_path = get_base_path()
-    aspects_dir = base_path / "aspects"
-
-    # Guard: if aspects directory doesn't exist, return gracefully
-    if not aspects_dir.exists():
+    aspects_dir = _get_aspects_dir()
+    if aspects_dir is None:
         return
 
     for aspect_path in aspects_dir.iterdir():
@@ -290,11 +285,8 @@ def list_shortcomings(
         Each line contains a JSON object representing a shortcoming,
         including 'type' and 'aspect' fields.
     """
-    base_path = get_base_path()
-    aspects_dir = base_path / "aspects"
-
-    # Guard: if aspects directory doesn't exist, return gracefully
-    if not aspects_dir.exists():
+    aspects_dir = _get_aspects_dir()
+    if aspects_dir is None:
         return
 
     for aspect_path in aspects_dir.iterdir():
