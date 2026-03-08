@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-03-08
+
+### Changed
+- Refactored code by moving utility functions from `engine.py` to `cli.py`: `get_package_version()` → `_get_package_version()`, `validate_name()` → `_validate_name()`, and `_get_aspects_dir()`. These are now private CLI helpers rather than engine-level utilities.
+- Reorganized tests: moved `TestConfigDiscovery` and `TestConfigRobustness` classes from `test_main.py` to new `test_engine.py` file.
+
+### Added
+- New test file `tests/test_engine.py` for consolidated engine-related tests.
+- New test class `TestGetBasePathCalled` with tests verifying that `get_base_path()` is properly called by CLI commands (`add-aspect`, `add-feature`, `add-shortcoming`, `list-all`, `list-aspects`, `list-shortcomings`).
+
 ## [0.3.3] - 2026-03-08
 
 ### Added
