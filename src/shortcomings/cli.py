@@ -122,6 +122,8 @@ def add_feature(
     Raises:
         typer.Exit: If the feature or aspect doesn't exist.
     """
+    validate_name(name)
+
     base_path = get_base_path()
 
     features_dir = base_path / "aspects" / aspect / "features"
@@ -175,6 +177,8 @@ def add_shortcoming(
     Raises:
         typer.Exit: If the shortcoming already exists or criticality is invalid.
     """
+    validate_name(name)
+
     # Validate criticality
     if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
         valid_values = ", ".join(sorted(VALID_CRITICALITY_VALUES))
