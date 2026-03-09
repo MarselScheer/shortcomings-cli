@@ -667,6 +667,16 @@ class TestHelpText:
             "outside" in result.output.lower() or "others" in result.output.lower()
         ), "Help text for --depends-on should mention external/others dependencies"
 
+    def test_list_all_help_mentions_visidata(self):
+        """Test that list-all --help mentions visidata for exploring output."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["list-all", "--help"])
+        assert result.exit_code == 0
+
+        assert "visidata" in result.output.lower(), (
+            f"Help text should mention visidata for exploring JSONL output, got: {result.output!r}"
+        )
+
 
 class TestGetBasePathCalled:
     """Tests to verify get_base_path() is called by CLI commands."""
