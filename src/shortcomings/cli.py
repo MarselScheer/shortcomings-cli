@@ -259,7 +259,9 @@ def _get_aspects_dir() -> Path | None:
     return aspects_dir if aspects_dir.exists() else None
 
 
-@app.command()
+@app.command(
+    epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-all | vd"
+)
 def list_all():
     """List all aspects, features, and shortcomings in JSONL format.
 
@@ -300,7 +302,7 @@ def list_all():
             print(json.dumps(shortcoming_data))
 
 
-@app.command()
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-aspects | vd")
 def list_aspects():
     aspects_dir = _get_aspects_dir()
     if aspects_dir is None:
@@ -315,7 +317,7 @@ def list_aspects():
         print(json.dumps(aspect_data))
 
 
-@app.command()
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-shortcomings | vd")
 def list_shortcomings(
     criticality: str | None = None,
 ):
