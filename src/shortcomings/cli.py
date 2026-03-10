@@ -302,7 +302,7 @@ def list_all():
             print(json.dumps(shortcoming_data))
 
 
-@app.command()
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-aspects | vd")
 def list_aspects():
     aspects_dir = _get_aspects_dir()
     if aspects_dir is None:
