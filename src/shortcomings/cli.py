@@ -317,7 +317,7 @@ def list_aspects():
         print(json.dumps(aspect_data))
 
 
-@app.command()
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-shortcomings | vd")
 def list_shortcomings(
     criticality: str | None = None,
 ):

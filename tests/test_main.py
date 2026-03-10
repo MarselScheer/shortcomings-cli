@@ -687,6 +687,16 @@ class TestHelpText:
             f"Help text should mention visidata for exploring JSONL output, got: {result.output!r}"
         )
 
+    def test_list_shortcomings_help_mentions_visidata(self):
+        """Test that list-shortcomings --help mentions visidata for exploring output."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["list-shortcomings", "--help"])
+        assert result.exit_code == 0
+
+        assert "visidata" in result.output.lower(), (
+            f"Help text should mention visidata for exploring JSONL output, got: {result.output!r}"
+        )
+
 
 class TestGetBasePathCalled:
     """Tests to verify get_base_path() is called by CLI commands."""
