@@ -1,5 +1,5 @@
-description: User can list shortcomings in JSONL format with optional criticality
-  filtering
+description: Shortcomings are listed in JSONL format. Advanced filtering is delegated
+  to standard Unix tools and VisiData, leveraging the structured JSONL output.
 tags:
 - command
 - listing
