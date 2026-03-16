@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-03-16
+
+### Fixed
+- Resolved shortcoming `List_Aspects_Fragile_YAML_Handling` by adding missing test coverage for `list-aspects` handling missing `aspect.yaml` and corrupted YAML files. The implementation already handled these cases gracefully via `safe_load_yaml`.
+
+### Added
+- New test `test_list_aspects_handles_missing_aspect_yaml` to verify `list-aspects` skips incomplete aspect directories.
+- New parametrized test case for `list-aspects` in `TestConfigRobustness` to verify corrupted YAML handling.
+
 ## [0.3.5] - 2026-03-10
 
 ### Added
