@@ -281,6 +281,12 @@ class TestConfigRobustness:
                     aspect_yaml_valid=True,
                 ),
             ),
+            (
+                ["list-aspects"],
+                lambda cfg, asp: _create_aspect_with_invalid_yaml(
+                    asp, "test-aspect", "aspect.yaml"
+                ),
+            ),
         ],
     )
     def test_handles_corrupted_yaml(self, tmp_path, monkeypatch, command, setup_func):
@@ -549,6 +555,23 @@ class TestListAspects:
         assert obj["type"] == "aspect"
         assert "rest-api" not in result.output  # Feature should not appear
         assert "no-auth" not in result.output  # Shortcoming should not appear
+
+    def test_list_aspects_handles_missing_aspect_yaml(self, cli_runner):
+        """Test that list-aspects doesn't crash when aspect directory lacks aspect.yaml."""
+        # Create aspects directory with a subdirectory that's missing aspect.yaml
+        aspects_dir = Path("aspects")
+        aspects_dir.mkdir()
+        (aspects_dir / "incomplete-aspect").mkdir()
+
+        # Also create a valid aspect for comparison
+        cli_runner.invoke(app, ["add-aspect", "valid", "A valid aspect"])
+
+        result = cli_runner.invoke(app, ["list-aspects"])
+
+        # Should not crash - exit code 0
+        assert result.exit_code == 0
+        # Should still list the valid aspect
+        assert "valid" in result.output
 
     def test_list_aspects_handles_stray_file_in_aspects(self, cli_runner):
         """Test that list-aspects doesn't crash when aspects/ contains a stray file."""
