@@ -1,0 +1,7 @@
+created_at: '2026-03-17'
+description: Authorship and history of features and shortcomings are tracked via git.
+  Use git blame to see who created or modified any feature/shortcoming.
+tags:
+- git
+- attribution
+title: Git_Blame_For_Attribution
