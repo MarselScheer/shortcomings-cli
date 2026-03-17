@@ -5,14 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.6] - 2026-03-16
+## [0.3.6] - 2026-03-17
+
+### Added
+- New feature `No_Editor_Integration` in Environment_Integration_Config: Favors using fuzzy file search tools (like fzf) combined with an editor for efficient workflows instead of a built-in edit command.
+- New feature `Git_Blame_For_Attribution` to track authorship and history of features and shortcomings using git blame.
+- New feature `List_Shortcomings_With_Filtering` for listing shortcomings with advanced filtering capabilities.
+- Test `test_list_aspects_handles_missing_aspect_yaml` to verify `list-aspects` skips incomplete aspect directories (those lacking `aspect.yaml`).
+- New test `test_list_aspects_handles_missing_aspect_yaml` to verify `list-aspects` skips incomplete aspect directories.
+- New parametrized test case for `list-aspects` in `TestConfigRobustness` to verify corrupted YAML handling.
+
+### Changed
+- Updated `list-all` command description to emphasize optimization for data extraction tools like VisiData.
+
+### Removed
+- Shortcoming `No_Editor_Integration`: Replaced with the `No_Editor_Integration` feature as a deliberate design decision.
+- Shortcoming `No_Author_Attribution`: Addressed by the new `Git_Blame_For_Attribution` feature.
+- Shortcoming `Limited_Output_Formats`: Addressed by JSONL output which works well with external tools.
+- Shortcoming `No_Filtering_Support`: Addressed by the new `List_Shortcomings_With_Filtering` feature.
 
 ### Fixed
 - Resolved shortcoming `List_Aspects_Fragile_YAML_Handling` by adding missing test coverage for `list-aspects` handling missing `aspect.yaml` and corrupted YAML files. The implementation already handled these cases gracefully via `safe_load_yaml`.
-
-### Added
-- New test `test_list_aspects_handles_missing_aspect_yaml` to verify `list-aspects` skips incomplete aspect directories.
-- New parametrized test case for `list-aspects` in `TestConfigRobustness` to verify corrupted YAML handling.
 
 ## [0.3.5] - 2026-03-10
 
