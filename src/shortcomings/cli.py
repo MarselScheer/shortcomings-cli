@@ -351,3 +351,69 @@ def list_shortcomings(
             shortcoming_data["type"] = "shortcoming"
             shortcoming_data["aspect"] = aspect_path.name
             print(json.dumps(shortcoming_data))
+
+
+@app.command()
+def delete_shortcoming(
+    name: str,
+    aspect: str | None = typer.Option(None, help="The aspect to delete the shortcoming from. Required if the shortcoming name appears in multiple aspects."),
+):
+    """Delete a shortcoming by name.
+
+    If the shortcoming name is unique across all aspects, it will be deleted.
+    If the name appears in multiple aspects, you must specify the --aspect option.
+
+    Args:
+        name: The name of the shortcoming to delete.
+        aspect: The aspect containing the shortcoming (required for ambiguous names).
+    """
+    _validate_name(name)
+
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+
+    if not aspects_dir.exists():
+        typer.echo(f"Error: Shortcoming '{name}' not found.", err=True)
+        raise typer.Exit(code=1)
+
+    # Find all shortcoming files with this name
+    matching_files: list[tuple[Path, str]] = []  # List of (file_path, aspect_name)
+
+    for aspect_path in aspects_dir.iterdir():
+        if not aspect_path.is_dir():
+            continue
+        shortcoming_file = aspect_path / "shortcomings" / f"{name}.yaml"
+        if shortcoming_file.exists():
+            matching_files.append((shortcoming_file, aspect_path.name))
+
+    if aspect is not None:
+        # Specific aspect provided - look for the file there
+        target_file = aspects_dir / aspect / "shortcomings" / f"{name}.yaml"
+        if target_file.exists():
+            target_file.unlink()
+            typer.echo(f"Deleted shortcoming '{name}' from aspect '{aspect}'.")
+            raise typer.Exit(code=0)
+        else:
+            typer.echo(f"Error: Shortcoming '{name}' not found in aspect '{aspect}'.", err=True)
+            raise typer.Exit(code=1)
+
+    # No aspect provided - analyze matches
+    if len(matching_files) == 0:
+        typer.echo(f"Error: Shortcoming '{name}' not found.", err=True)
+        raise typer.Exit(code=1)
+
+    if len(matching_files) == 1:
+        # Unique - delete directly
+        file_path, aspect_name = matching_files[0]
+        file_path.unlink()
+        typer.echo(f"Deleted shortcoming '{name}' from aspect '{aspect_name}'.")
+        raise typer.Exit(code=0)
+
+    # Ambiguous - list aspects and exit
+    aspect_names = [aspect_name for _, aspect_name in matching_files]
+    typer.echo(
+        f"Error: Shortcoming '{name}' appears in multiple aspects: {', '.join(aspect_names)}. "
+        "Please specify --aspect to disambiguate.",
+        err=True,
+    )
+    raise typer.Exit(code=1)

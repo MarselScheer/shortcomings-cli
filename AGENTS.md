@@ -13,6 +13,17 @@ A UV managed repo. Key paths/files:
 - keep the CHANGLOG.md file updated
 - keep features under aspects/ updated
 
+# CLI Commands
+
+- `shortcomings init` - Initialize config
+- `shortcomings add-aspect <name> <user_story>` - Add an aspect
+- `shortcomings add-feature <aspect> <name>` - Add a feature to an aspect
+- `shortcomings add-shortcoming <aspect> <name>` - Add a shortcoming to an aspect
+- `shortcomings delete-shortcoming <name> [--aspect <aspect>]` - Delete a shortcoming by name (use --aspect if name is ambiguous)
+- `shortcomings list-all` - List all aspects, features, and shortcomings
+- `shortcomings list-aspects` - List aspects
+- `shortcomings list-shortcomings` - List shortcomings
+
 # Development Commands
 
 Do NOT use `cd` before make targets; make handles directory context internally (e.g., use `make test` not `cd . && make test`)

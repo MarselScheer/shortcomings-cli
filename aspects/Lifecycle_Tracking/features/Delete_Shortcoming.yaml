@@ -1,0 +1,7 @@
+title: Delete_Shortcoming
+description: Ability to delete a shortcoming by name. If the name is unique across all aspects, it deletes directly. If the name appears in multiple aspects, it lists them and requires the --aspect option.
+tags:
+  - cli
+  - management
+  - lifecycle
+created_at: '2026-06-06'

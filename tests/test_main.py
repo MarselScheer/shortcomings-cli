@@ -721,6 +721,74 @@ class TestHelpText:
         )
 
 
+class TestDeleteShortcoming:
+    """Tests for delete-shortcoming command."""
+
+    def test_delete_shortcoming_deletes_unique_name(self, cli_runner):
+        """Test that delete-shortcoming deletes a shortcoming when name is unique."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        assert sc_file.exists()
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code == 0
+        assert not sc_file.exists(), "Shortcoming file should be deleted"
+
+    def test_delete_shortcoming_fails_if_not_found(self, cli_runner):
+        """Test that delete-shortcoming fails when shortcoming doesn't exist."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "non-existent"])
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower()
+
+    def test_delete_shortcoming_asks_for_aspect_when_ambiguous(self, cli_runner):
+        """Test that delete-shortcoming asks for --aspect when name appears in multiple aspects, and lists both aspects."""
+        # Create two aspects with the same shortcoming name
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-aspect", "backend", "Backend services"])
+
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+        cli_runner.invoke(app, ["add-shortcoming", "backend", "no-auth"])
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code != 0
+        assert "multiple aspects" in result.output.lower() or "specify" in result.output.lower()
+        # Verify both aspects are listed so user knows which ones to choose from
+        assert "api" in result.output.lower(), "Output should list 'api' aspect"
+        assert "backend" in result.output.lower(), "Output should list 'backend' aspect"
+
+    def test_delete_shortcoming_with_aspect_option(self, cli_runner):
+        """Test that delete-shortcoming deletes when --aspect is provided for ambiguous name."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-aspect", "backend", "Backend services"])
+
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+        cli_runner.invoke(app, ["add-shortcoming", "backend", "no-auth"])
+
+        # Delete only the one in 'api' aspect
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth", "--aspect", "api"])
+        assert result.exit_code == 0
+
+        api_sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        backend_sc_file = Path("aspects") / "backend" / "shortcomings" / "no-auth.yaml"
+
+        assert not api_sc_file.exists(), "Shortcoming in api should be deleted"
+        assert backend_sc_file.exists(), "Shortcoming in backend should still exist"
+
+    def test_delete_shortcoming_fails_with_wrong_aspect(self, cli_runner):
+        """Test that delete-shortcoming fails when --aspect is provided but shortcoming doesn't exist there."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        # Try to delete shortcoming 'no-auth' but specify wrong aspect
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth", "--aspect", "backend"])
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower() or "aspect" in result.output.lower()
+
+
 class TestGetBasePathCalled:
     """Tests to verify get_base_path() is called by CLI commands."""
 
