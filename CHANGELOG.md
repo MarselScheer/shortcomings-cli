@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - If the name appears in multiple aspects, it lists them and requires `--aspect` option.
 - Feature definition for `Delete_Shortcoming` in the Shortcoming Management aspect.
 - Unit tests for the `delete-shortcoming` command.
+- Make target to install shortcomings-cli from a github branch
 
 ### Changed
 - Updated `AGENTS.md` with instructions for the new `delete-shortcoming` command.

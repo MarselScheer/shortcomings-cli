@@ -43,3 +43,7 @@ fix: format
 	@echo -------------------- $@ $$(date) --------------------
 	uv run ruff check --fix .
 
+install-from-branch:
+	@echo -------------------- $@ $$(date) --------------------
+	- uv tool uninstall shortcomings-cli
+	uv tool install git+https://github.com/MarselScheer/shortcomings-cli.git@$(branch)
