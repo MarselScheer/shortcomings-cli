@@ -30,6 +30,7 @@ Do NOT use `cd` before make targets; make handles directory context internally (
 
 - `make run` - Run the application
 - `make test` - Run all tests
+- `make coverage` - Runs tests and show line numbers of lines not covered
 - `make test-file TEST_FILE=path/to/test.py` - Run a single test file
 - `make lint` - Lint code with ruff
 - `make format` - Format code with ruff
