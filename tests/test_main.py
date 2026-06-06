@@ -697,6 +697,14 @@ class TestDeleteShortcoming:
         assert result.exit_code == 0
         assert not sc_file.exists(), "Shortcoming file should be deleted"
 
+    def test_delete_shortcoming_fails_when_aspects_dir_missing(self, cli_runner):
+        """Test that delete-shortcoming shows meaningful error when aspects/ directory is missing."""
+        # Note: cli_runner fixture only creates config file, not aspects/ directory
+        result = cli_runner.invoke(app, ["delete-shortcoming", "some-shortcoming"])
+        assert result.exit_code != 0
+        assert "aspects/" in result.output.lower()
+        assert "exist" in result.output.lower() or "initialized" in result.output.lower()
+
     def test_delete_shortcoming_fails_if_not_found(self, cli_runner):
         """Test that delete-shortcoming fails when shortcoming doesn't exist."""
         cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
@@ -748,6 +756,23 @@ class TestDeleteShortcoming:
         result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth", "--aspect", "backend"])
         assert result.exit_code != 0
         assert "not found" in result.output.lower() or "aspect" in result.output.lower()
+
+    def test_delete_shortcoming_skips_non_directory_entries(self, cli_runner):
+        """Test that delete-shortcoming skips non-directory entries in aspects folder."""
+        # Create an aspect with a shortcoming
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        # Create a stray file in the aspects directory (not a directory)
+        stray_file = Path("aspects") / "README.md"
+        stray_file.write_text("# Some stray file")
+
+        # This should still work - the stray file should be skipped via continue
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code == 0
+
+        sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        assert not sc_file.exists(), "Shortcoming file should be deleted"
 
 
 class TestGetBasePathCalled:

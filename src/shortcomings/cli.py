@@ -359,7 +359,10 @@ def delete_shortcoming(
     aspects_dir = base_path / "aspects"
 
     if not aspects_dir.exists():
-        typer.echo(f"Error: Shortcoming '{name}' not found.", err=True)
+        typer.echo(
+            "Error: The 'aspects/' directory does not exist. Please run 'shortcomings init' or ensure you are in the correct project root.",
+            err=True,
+        )
         raise typer.Exit(code=1)
 
     # Find all shortcoming files with this name
