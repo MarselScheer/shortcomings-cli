@@ -55,9 +55,7 @@ def _get_package_version() -> str:
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
-    version: bool = typer.Option(
-        False, "--version", help="Show version", is_eager=True
-    ),
+    version: bool = typer.Option(False, "--version", help="Show version", is_eager=True),
 ):
     """Main callback for the Shortcomings CLI.
 
@@ -162,9 +160,7 @@ def add_feature(
 
     feature_file = features_dir / f"{name}.yaml"
     if feature_file.exists():
-        typer.echo(
-            f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True
-        )
+        typer.echo(f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True)
         raise typer.Exit(code=1)
 
     feature_data = {
@@ -251,9 +247,7 @@ def _get_aspects_dir() -> Path | None:
     return aspects_dir if aspects_dir.exists() else None
 
 
-@app.command(
-    epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-all | vd"
-)
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-all | vd")
 def list_all():
     """List all aspects, features, and shortcomings in JSONL format.
 
@@ -334,10 +328,7 @@ def list_shortcomings(
         for shortcoming_file in shortcomings_dir.glob("*.yaml"):
             shortcoming_data = safe_load_yaml(shortcoming_file)
 
-            if (
-                criticality is not None
-                and shortcoming_data.get("criticality") != criticality
-            ):
+            if criticality is not None and shortcoming_data.get("criticality") != criticality:
                 continue
 
             shortcoming_data["type"] = "shortcoming"
@@ -348,7 +339,10 @@ def list_shortcomings(
 @app.command()
 def delete_shortcoming(
     name: str,
-    aspect: str | None = typer.Option(None, help="The aspect to delete the shortcoming from. Required if the shortcoming name appears in multiple aspects."),
+    aspect: str | None = typer.Option(
+        None,
+        help="The aspect to delete the shortcoming from. Required if the shortcoming name appears in multiple aspects.",
+    ),
 ):
     """Delete a shortcoming by name.
 

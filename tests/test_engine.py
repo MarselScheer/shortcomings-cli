@@ -23,9 +23,7 @@ def assert_yaml_content(file_path: Path, expected: dict):
     """Helper to verify YAML file content matches expected dict."""
     content = yaml.safe_load(file_path.read_text())
     for key, value in expected.items():
-        assert content.get(key) == value, (
-            f"Mismatch for key '{key}': {content.get(key)!r} != {value!r}"
-        )
+        assert content.get(key) == value, f"Mismatch for key '{key}': {content.get(key)!r} != {value!r}"
 
 
 class TestConfigDiscovery:

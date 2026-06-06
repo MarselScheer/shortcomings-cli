@@ -47,9 +47,7 @@ def find_config_path() -> Path:
         config_path = dir_path / ".shortcomings.yaml"
         if config_path.exists():
             return config_path
-    raise FileNotFoundError(
-        f"Config file .shortcomings.yaml not found in {current} or any parent directory"
-    )
+    raise FileNotFoundError(f"Config file .shortcomings.yaml not found in {current} or any parent directory")
 
 
 def get_base_path() -> Path:
