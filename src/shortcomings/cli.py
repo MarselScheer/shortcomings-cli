@@ -9,7 +9,7 @@ import json
 from datetime import date
 from importlib.metadata import version as get_version
 from pathlib import Path
-from typing import Literal
+from typing import Literal, get_args
 
 import typer
 import yaml
@@ -19,7 +19,8 @@ from shortcomings.engine import (
     safe_load_yaml,
 )
 
-VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
+Criticality = Literal["low", "medium", "high", "critical"]
+VALID_CRITICALITY_VALUES = set(get_args(Criticality))
 """Set of valid criticality values for shortcomings."""
 
 
@@ -47,7 +48,7 @@ def _get_package_version() -> str:
     """
     try:
         return get_version("shortcomings-cli")
-    except Exception:
+    except Exception:  # pragma: no cover
         return "0.0.0"
 
 
@@ -183,7 +184,7 @@ def add_shortcoming(
     aspect: str,
     name: str,
     description: str = "",
-    criticality: Literal["low", "medium", "high", "critical"] = "critical",
+    criticality: Criticality = "critical",
     tags: str = "",
     depends_on: str = typer.Option(
         "us only",
@@ -206,15 +207,6 @@ def add_shortcoming(
         typer.Exit: If the shortcoming already exists or criticality is invalid.
     """
     _validate_name(name)
-
-    # Validate criticality
-    if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
-        valid_values = ", ".join(sorted(VALID_CRITICALITY_VALUES))
-        typer.echo(
-            f"Error: Invalid criticality '{criticality}'. Must be one of: {valid_values}.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
 
     base_path = get_base_path()
 
