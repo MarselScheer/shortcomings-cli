@@ -11,7 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `delete-shortcoming` command to delete a shortcoming by name.
   - If the shortcoming name is unique, it deletes directly.
   - If the name appears in multiple aspects, it lists them and requires `--aspect` option.
-- Unit tests for the new `delete-shortcoming` command.
+- Feature definition for `Delete_Shortcoming` in the Shortcoming Management aspect.
+- Unit tests for the `delete-shortcoming` command.
+
+### Changed
+- Updated `AGENTS.md` with instructions for the new `delete-shortcoming` command.
+- Refactored `cli.py` and `engine.py` to improve name validation and file handling.
+- Optimized test suite structure by migrating and updating engine-related tests.
 
 ## [0.3.6] - 2026-03-17
 
