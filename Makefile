@@ -9,6 +9,11 @@ test:
 	@echo -------------------- $@ $$(date) --------------------
 	uv run pytest
 
+coverage:
+	@echo -------------------- $@ $$(date) --------------------
+	uv run coverage run -m pytest
+	uv run coverage report -m
+
 # Test a single test file (Usage: make test-file TEST_FILE=tests/test_storage.py)
 test-file:
 	@echo -------------------- test-file $$(date) --------------------
@@ -38,3 +43,7 @@ fix: format
 	@echo -------------------- $@ $$(date) --------------------
 	uv run ruff check --fix .
 
+install-from-branch:
+	@echo -------------------- $@ $$(date) --------------------
+	- uv tool uninstall shortcomings-cli
+	uv tool install git+https://github.com/MarselScheer/shortcomings-cli.git@$(branch)

@@ -9,7 +9,7 @@ import json
 from datetime import date
 from importlib.metadata import version as get_version
 from pathlib import Path
-from typing import Literal
+from typing import Literal, get_args
 
 import typer
 import yaml
@@ -19,7 +19,8 @@ from shortcomings.engine import (
     safe_load_yaml,
 )
 
-VALID_CRITICALITY_VALUES = {"low", "medium", "high", "critical"}
+Criticality = Literal["low", "medium", "high", "critical"]
+VALID_CRITICALITY_VALUES = set(get_args(Criticality))
 """Set of valid criticality values for shortcomings."""
 
 
@@ -47,16 +48,14 @@ def _get_package_version() -> str:
     """
     try:
         return get_version("shortcomings-cli")
-    except Exception:
+    except Exception:  # pragma: no cover
         return "0.0.0"
 
 
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
-    version: bool = typer.Option(
-        False, "--version", help="Show version", is_eager=True
-    ),
+    version: bool = typer.Option(False, "--version", help="Show version", is_eager=True),
 ):
     """Main callback for the Shortcomings CLI.
 
@@ -161,9 +160,7 @@ def add_feature(
 
     feature_file = features_dir / f"{name}.yaml"
     if feature_file.exists():
-        typer.echo(
-            f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True
-        )
+        typer.echo(f"Error: Feature '{name}' already exists in aspect '{aspect}'.", err=True)
         raise typer.Exit(code=1)
 
     feature_data = {
@@ -183,7 +180,7 @@ def add_shortcoming(
     aspect: str,
     name: str,
     description: str = "",
-    criticality: Literal["low", "medium", "high", "critical"] = "critical",
+    criticality: Criticality = "critical",
     tags: str = "",
     depends_on: str = typer.Option(
         "us only",
@@ -206,15 +203,6 @@ def add_shortcoming(
         typer.Exit: If the shortcoming already exists or criticality is invalid.
     """
     _validate_name(name)
-
-    # Validate criticality
-    if criticality and criticality.lower() not in VALID_CRITICALITY_VALUES:
-        valid_values = ", ".join(sorted(VALID_CRITICALITY_VALUES))
-        typer.echo(
-            f"Error: Invalid criticality '{criticality}'. Must be one of: {valid_values}.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
 
     base_path = get_base_path()
 
@@ -259,9 +247,7 @@ def _get_aspects_dir() -> Path | None:
     return aspects_dir if aspects_dir.exists() else None
 
 
-@app.command(
-    epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-all | vd"
-)
+@app.command(epilog="Tip: Use 'visidata' to explore the JSONL output: shortcomings list-all | vd")
 def list_all():
     """List all aspects, features, and shortcomings in JSONL format.
 
@@ -342,12 +328,81 @@ def list_shortcomings(
         for shortcoming_file in shortcomings_dir.glob("*.yaml"):
             shortcoming_data = safe_load_yaml(shortcoming_file)
 
-            if (
-                criticality is not None
-                and shortcoming_data.get("criticality") != criticality
-            ):
+            if criticality is not None and shortcoming_data.get("criticality") != criticality:
                 continue
 
             shortcoming_data["type"] = "shortcoming"
             shortcoming_data["aspect"] = aspect_path.name
             print(json.dumps(shortcoming_data))
+
+
+@app.command()
+def delete_shortcoming(
+    name: str,
+    aspect: str | None = typer.Option(
+        None,
+        help="The aspect to delete the shortcoming from. Required if the shortcoming name appears in multiple aspects.",
+    ),
+):
+    """Delete a shortcoming by name.
+
+    If the shortcoming name is unique across all aspects, it will be deleted.
+    If the name appears in multiple aspects, you must specify the --aspect option.
+
+    Args:
+        name: The name of the shortcoming to delete.
+        aspect: The aspect containing the shortcoming (required for ambiguous names).
+    """
+    _validate_name(name)
+
+    base_path = get_base_path()
+    aspects_dir = base_path / "aspects"
+
+    if not aspects_dir.exists():
+        typer.echo(
+            "Error: The 'aspects/' directory does not exist. Please run 'shortcomings init' or ensure you are in the correct project root.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    # Find all shortcoming files with this name
+    matching_files: list[tuple[Path, str]] = []  # List of (file_path, aspect_name)
+
+    for aspect_path in aspects_dir.iterdir():
+        if not aspect_path.is_dir():
+            continue
+        shortcoming_file = aspect_path / "shortcomings" / f"{name}.yaml"
+        if shortcoming_file.exists():
+            matching_files.append((shortcoming_file, aspect_path.name))
+
+    if aspect is not None:
+        # Specific aspect provided - look for the file there
+        target_file = aspects_dir / aspect / "shortcomings" / f"{name}.yaml"
+        if target_file.exists():
+            target_file.unlink()
+            typer.echo(f"Deleted shortcoming '{name}' from aspect '{aspect}'.")
+            raise typer.Exit(code=0)
+        else:
+            typer.echo(f"Error: Shortcoming '{name}' not found in aspect '{aspect}'.", err=True)
+            raise typer.Exit(code=1)
+
+    # No aspect provided - analyze matches
+    if len(matching_files) == 0:
+        typer.echo(f"Error: Shortcoming '{name}' not found.", err=True)
+        raise typer.Exit(code=1)
+
+    if len(matching_files) == 1:
+        # Unique - delete directly
+        file_path, aspect_name = matching_files[0]
+        file_path.unlink()
+        typer.echo(f"Deleted shortcoming '{name}' from aspect '{aspect_name}'.")
+        raise typer.Exit(code=0)
+
+    # Ambiguous - list aspects and exit
+    aspect_names = [aspect_name for _, aspect_name in matching_files]
+    typer.echo(
+        f"Error: Shortcoming '{name}' appears in multiple aspects: {', '.join(aspect_names)}. "
+        "Please specify --aspect to disambiguate.",
+        err=True,
+    )
+    raise typer.Exit(code=1)

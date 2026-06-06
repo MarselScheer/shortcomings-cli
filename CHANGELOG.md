@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-06-06
+
+### Added
+- New `delete-shortcoming` command to delete a shortcoming by name.
+  - If the shortcoming name is unique, it deletes directly.
+  - If the name appears in multiple aspects, it lists them and requires `--aspect` option.
+- Feature definition for `Delete_Shortcoming` in the Shortcoming Management aspect.
+- Unit tests for the `delete-shortcoming` command.
+- Make target to install shortcomings-cli from a github branch
+
+### Changed
+- Updated `AGENTS.md` with instructions for the new `delete-shortcoming` command.
+- Refactored `cli.py` and `engine.py` to improve name validation and file handling.
+- Optimized test suite structure by migrating and updating engine-related tests.
+
 ## [0.3.6] - 2026-03-17
 
 ### Added

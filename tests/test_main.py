@@ -25,9 +25,7 @@ def assert_yaml_content(file_path: Path, expected: dict):
     """Helper to verify YAML file content matches expected dict."""
     content = yaml.safe_load(file_path.read_text())
     for key, value in expected.items():
-        assert content.get(key) == value, (
-            f"Mismatch for key '{key}': {content.get(key)!r} != {value!r}"
-        )
+        assert content.get(key) == value, f"Mismatch for key '{key}': {content.get(key)!r} != {value!r}"
 
 
 class TestAspectManagement:
@@ -68,9 +66,7 @@ class TestAspectManagement:
         assert aspect_file.exists()
         content = yaml.safe_load(aspect_file.read_text())
         assert "created_at" in content, "Aspect should include created_at field"
-        assert content["created_at"] == today, (
-            f"created_at should be today's date ({today})"
-        )
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
 
 
 class TestFeatureManagement:
@@ -136,9 +132,7 @@ class TestFeatureManagement:
         assert feature_file.exists()
         content = yaml.safe_load(feature_file.read_text())
         assert "created_at" in content, "Feature should include created_at field"
-        assert content["created_at"] == today, (
-            f"created_at should be today's date ({today})"
-        )
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
 
 
 class TestShortcomingManagement:
@@ -197,14 +191,9 @@ class TestShortcomingManagement:
         """Test that adding a shortcoming with invalid criticality fails."""
         cli_runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
 
-        result = cli_runner.invoke(
-            app, ["add-shortcoming", "ci", "slow-builds", "--criticality", "very-high"]
-        )
+        result = cli_runner.invoke(app, ["add-shortcoming", "ci", "slow-builds", "--criticality", "very-high"])
         assert result.exit_code != 0
-        assert any(
-            word in result.output.lower()
-            for word in ["low", "medium", "high", "critical", "valid"]
-        )
+        assert any(word in result.output.lower() for word in ["low", "medium", "high", "critical", "valid"])
 
     def test_add_shortcoming_default_depends_on(self, cli_runner):
         """Test that depends_on defaults to 'us only' when not specified."""
@@ -254,9 +243,7 @@ class TestShortcomingManagement:
         assert sc_file.exists()
         content = yaml.safe_load(sc_file.read_text())
         assert "created_at" in content, "Shortcoming should include created_at field"
-        assert content["created_at"] == today, (
-            f"created_at should be today's date ({today})"
-        )
+        assert content["created_at"] == today, f"created_at should be today's date ({today})"
 
 
 class TestConfigRobustness:
@@ -268,9 +255,7 @@ class TestConfigRobustness:
             # (command, setup_func) where setup_func(config_dir, aspects_dir) -> None
             (
                 ["list-all"],
-                lambda cfg, asp: _create_aspect_with_invalid_yaml(
-                    asp, "test-aspect", "aspect.yaml"
-                ),
+                lambda cfg, asp: _create_aspect_with_invalid_yaml(asp, "test-aspect", "aspect.yaml"),
             ),
             (
                 ["list-shortcomings"],
@@ -283,9 +268,7 @@ class TestConfigRobustness:
             ),
             (
                 ["list-aspects"],
-                lambda cfg, asp: _create_aspect_with_invalid_yaml(
-                    asp, "test-aspect", "aspect.yaml"
-                ),
+                lambda cfg, asp: _create_aspect_with_invalid_yaml(asp, "test-aspect", "aspect.yaml"),
             ),
         ],
     )
@@ -361,9 +344,7 @@ class TestInitCommand:
             assert result.exit_code != 0, "Init should fail when file exists"
 
             current_content = config_file.read_text()
-            assert current_content == original_content, (
-                "Existing file should not be overwritten"
-            )
+            assert current_content == original_content, "Existing file should not be overwritten"
 
 
 class TestVersion:
@@ -400,9 +381,7 @@ class TestListing:
 
         for line in lines:
             obj = json.loads(line)
-            assert "created_at" in obj, (
-                f"Item of type {obj.get('type')} should include created_at"
-            )
+            assert "created_at" in obj, f"Item of type {obj.get('type')} should include created_at"
             assert obj["created_at"] == today, (
                 f"Item of type {obj.get('type')} should have created_at equal to today ({today})"
             )
@@ -491,9 +470,7 @@ class TestRobustnessImplicitDirectoryStructure:
         # Create another aspect directory without shortcomings folder
         aspects_dir = Path("aspects")
         (aspects_dir / "no-shortcomings").mkdir()
-        (aspects_dir / "no-shortcomings" / "aspect.yaml").write_text(
-            "name: no-shortcomings\n"
-        )
+        (aspects_dir / "no-shortcomings" / "aspect.yaml").write_text("name: no-shortcomings\n")
 
         result = cli_runner.invoke(app, ["list-shortcomings"])
 
@@ -620,9 +597,7 @@ class TestListShortcomings:
 
         obj = json.loads(lines[0])
         assert "created_at" in obj, "Shortcoming should include created_at"
-        assert obj["created_at"] == today, (
-            f"Shortcoming should have created_at equal to today ({today})"
-        )
+        assert obj["created_at"] == today, f"Shortcoming should have created_at equal to today ({today})"
 
     @pytest.mark.parametrize(
         "criticality,expected_title",
@@ -633,29 +608,17 @@ class TestListShortcomings:
             ("low", "sc4"),
         ],
     )
-    def test_list_shortcomings_filters_by_criticality(
-        self, cli_runner, criticality, expected_title
-    ):
+    def test_list_shortcomings_filters_by_criticality(self, cli_runner, criticality, expected_title):
         """Test that list-shortcomings filters by criticality when provided."""
         cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
 
         # Add shortcomings with different criticalities
-        cli_runner.invoke(
-            app, ["add-shortcoming", "api", "sc1", "--criticality", "critical"]
-        )
-        cli_runner.invoke(
-            app, ["add-shortcoming", "api", "sc2", "--criticality", "high"]
-        )
-        cli_runner.invoke(
-            app, ["add-shortcoming", "api", "sc3", "--criticality", "medium"]
-        )
-        cli_runner.invoke(
-            app, ["add-shortcoming", "api", "sc4", "--criticality", "low"]
-        )
+        cli_runner.invoke(app, ["add-shortcoming", "api", "sc1", "--criticality", "critical"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "sc2", "--criticality", "high"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "sc3", "--criticality", "medium"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "sc4", "--criticality", "low"])
 
-        result = cli_runner.invoke(
-            app, ["list-shortcomings", "--criticality", criticality]
-        )
+        result = cli_runner.invoke(app, ["list-shortcomings", "--criticality", criticality])
         assert result.exit_code == 0
 
         lines = [line for line in result.output.strip().split("\n") if line]
@@ -674,9 +637,7 @@ class TestHelpText:
         result = runner.invoke(app, [])
 
         # Help output should contain "Usage:"
-        assert "Usage:" in result.output, (
-            f"Expected help output but got: {result.output!r}"
-        )
+        assert "Usage:" in result.output, f"Expected help output but got: {result.output!r}"
 
     def test_add_shortcoming_depends_on_help_text_mentions_external_dependencies(self):
         """Test that --depends-on help text explains it can include external dependencies."""
@@ -686,9 +647,9 @@ class TestHelpText:
 
         # The help text should mention that depends_on can describe dependencies
         # on people outside the developer team
-        assert (
-            "outside" in result.output.lower() or "others" in result.output.lower()
-        ), "Help text for --depends-on should mention external/others dependencies"
+        assert "outside" in result.output.lower() or "others" in result.output.lower(), (
+            "Help text for --depends-on should mention external/others dependencies"
+        )
 
     def test_list_all_help_mentions_visidata(self):
         """Test that list-all --help mentions visidata for exploring output."""
@@ -719,6 +680,99 @@ class TestHelpText:
         assert "visidata" in result.output.lower(), (
             f"Help text should mention visidata for exploring JSONL output, got: {result.output!r}"
         )
+
+
+class TestDeleteShortcoming:
+    """Tests for delete-shortcoming command."""
+
+    def test_delete_shortcoming_deletes_unique_name(self, cli_runner):
+        """Test that delete-shortcoming deletes a shortcoming when name is unique."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        assert sc_file.exists()
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code == 0
+        assert not sc_file.exists(), "Shortcoming file should be deleted"
+
+    def test_delete_shortcoming_fails_when_aspects_dir_missing(self, cli_runner):
+        """Test that delete-shortcoming shows meaningful error when aspects/ directory is missing."""
+        # Note: cli_runner fixture only creates config file, not aspects/ directory
+        result = cli_runner.invoke(app, ["delete-shortcoming", "some-shortcoming"])
+        assert result.exit_code != 0
+        assert "aspects/" in result.output.lower()
+        assert "exist" in result.output.lower() or "initialized" in result.output.lower()
+
+    def test_delete_shortcoming_fails_if_not_found(self, cli_runner):
+        """Test that delete-shortcoming fails when shortcoming doesn't exist."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "non-existent"])
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower()
+
+    def test_delete_shortcoming_asks_for_aspect_when_ambiguous(self, cli_runner):
+        """Test that delete-shortcoming asks for --aspect when name appears in multiple aspects, and lists both aspects."""
+        # Create two aspects with the same shortcoming name
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-aspect", "backend", "Backend services"])
+
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+        cli_runner.invoke(app, ["add-shortcoming", "backend", "no-auth"])
+
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code != 0
+        assert "multiple aspects" in result.output.lower() or "specify" in result.output.lower()
+        # Verify both aspects are listed so user knows which ones to choose from
+        assert "api" in result.output.lower(), "Output should list 'api' aspect"
+        assert "backend" in result.output.lower(), "Output should list 'backend' aspect"
+
+    def test_delete_shortcoming_with_aspect_option(self, cli_runner):
+        """Test that delete-shortcoming deletes when --aspect is provided for ambiguous name."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-aspect", "backend", "Backend services"])
+
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+        cli_runner.invoke(app, ["add-shortcoming", "backend", "no-auth"])
+
+        # Delete only the one in 'api' aspect
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth", "--aspect", "api"])
+        assert result.exit_code == 0
+
+        api_sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        backend_sc_file = Path("aspects") / "backend" / "shortcomings" / "no-auth.yaml"
+
+        assert not api_sc_file.exists(), "Shortcoming in api should be deleted"
+        assert backend_sc_file.exists(), "Shortcoming in backend should still exist"
+
+    def test_delete_shortcoming_fails_with_wrong_aspect(self, cli_runner):
+        """Test that delete-shortcoming fails when --aspect is provided but shortcoming doesn't exist there."""
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        # Try to delete shortcoming 'no-auth' but specify wrong aspect
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth", "--aspect", "backend"])
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower() or "aspect" in result.output.lower()
+
+    def test_delete_shortcoming_skips_non_directory_entries(self, cli_runner):
+        """Test that delete-shortcoming skips non-directory entries in aspects folder."""
+        # Create an aspect with a shortcoming
+        cli_runner.invoke(app, ["add-aspect", "api", "API endpoints"])
+        cli_runner.invoke(app, ["add-shortcoming", "api", "no-auth"])
+
+        # Create a stray file in the aspects directory (not a directory)
+        stray_file = Path("aspects") / "README.md"
+        stray_file.write_text("# Some stray file")
+
+        # This should still work - the stray file should be skipped via continue
+        result = cli_runner.invoke(app, ["delete-shortcoming", "no-auth"])
+        assert result.exit_code == 0
+
+        sc_file = Path("aspects") / "api" / "shortcomings" / "no-auth.yaml"
+        assert not sc_file.exists(), "Shortcoming file should be deleted"
 
 
 class TestGetBasePathCalled:
@@ -759,9 +813,7 @@ class TestGetBasePathCalled:
         with runner.isolated_filesystem():
             Path(".shortcomings.yaml").write_text("base_path: .\n")
             runner.invoke(app, ["add-aspect", "ci", "CI pipeline"])
-            result = runner.invoke(
-                app, ["add-shortcoming", "ci", "slow-builds", "--description", "Test"]
-            )
+            result = runner.invoke(app, ["add-shortcoming", "ci", "slow-builds", "--description", "Test"])
 
             assert result.exit_code == 0
             # Called once for add-aspect setup and once for add-shortcoming
